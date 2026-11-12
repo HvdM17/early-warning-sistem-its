@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#17212E" />
+    <title>EWS ITS — Sistem Peringatan Dini & Gamifikasi Pembelajar</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Server may inject window.EWS_CONFIG = { role, studentId, apiBase } before this script. -->
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" aria-label="Navigasi Utama">
+        <div class="brand-section">
+          <div class="brand-icon">E</div>
+          <div class="brand-text">
+            <h1>EWS ITS</h1>
+            <span>Early Warning System</span>
+          </div>
+        </div>
+
+        <div class="nav-group-label">Workspace</div>
+        <nav class="primary-nav" aria-label="Menu Aplikasi">
+          <a href="#ringkasan" class="nav-link" data-nav-target="ringkasan" data-audience="all" aria-current="page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Ringkasan</span>
+          </a>
+
+          <!-- Dosen Menus -->
+          <div class="nav-group-label" data-audience="dosen" hidden>Dosen</div>
+          <a href="#siswa-berisiko" class="nav-link" data-nav-target="siswa-berisiko" data-audience="dosen" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Siswa Berisiko</span>
+            <span class="nav-badge" id="badge-berisiko-count" hidden>0</span>
+          </a>
+
+          <a href="#prediksi" class="nav-link" data-nav-target="prediksi" data-audience="dosen" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            <span>Prediksi Risiko</span>
+          </a>
+
+          <a href="#metrik-model" class="nav-link" data-nav-target="metrik-model" data-audience="dosen" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>Metrik Model</span>
+          </a>
+
+          <!-- Mahasiswa Menus -->
+          <div class="nav-group-label" data-audience="mahasiswa" hidden>Mahasiswa</div>
+          <a href="#progres-saya" class="nav-link" data-nav-target="progres-saya" data-audience="mahasiswa" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>Progres & Gamifikasi</span>
+          </a>
+
+          <a href="#riwayat" class="nav-link" data-nav-target="riwayat" data-audience="mahasiswa" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Riwayat Aktivitas</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="model-status-chip">
+            <div class="status-dot-pulse"></div>
+            <span id="sidebar-backend-status"><strong>Menghubungkan ke backend</strong></span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- WORKSPACE AREA -->
+      <div class="workspace">
+        <header class="topbar">
+          <div class="topbar-left">
+            <div class="page-breadcrumb">
+              <span>EWS ITS</span>
+              <span>/</span>
+              <strong id="breadcrumb-title">Ringkasan</strong>
+            </div>
+          </div>
+
+          <span class="badge-tag" id="active-role-label">Dosen</span>
+        </header>
+
+        <main id="main-content" class="main-content">
+          <div class="backend-notice" id="backend-status" role="status" aria-live="polite"><strong>Menghubungkan ke backend.</strong> Status koneksi sedang diperiksa.</div>
+          <!-- ==========================================
+               SCREEN 1: RINGKASAN
+               ========================================== -->
+          <section class="screen" id="ringkasan" data-screen-id="ringkasan">
+            <!-- DOSEN VIEW -->
+            <div data-role-panel="dosen">
+              <div class="section-header">
+                <div>
+                  <h2 class="section-title">Ringkasan Pantauan Kelas</h2>
+                  <p class="section-description">Deteksi dini retensi mahasiswa berbasis log aktivitas LMS dan performa kuis.</p>
+                </div>
+                <div class="badge-tag" id="data-source-label">Memuat data kelas dari API</div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-icon-wrapper blue">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                  </div>
+                  <div class="stat-info">
+                    <p>Mahasiswa pada sampel API</p>
+                    <h3 id="stat-total-students">—</h3>
+                    <small>Maksimal 50 data dari endpoint</small>
+                  </div>
+                </div>
+
+                <div class="stat-card focal-high-risk">
+                  <div class="stat-icon-wrapper red">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </div>
+                  <div class="stat-info">
+                    <p>Mahasiswa Berisiko</p>
+                    <h3 id="stat-high-students" style="color: var(--risk-high-text);">—</h3>
+                    <small>Label biner dari dataset</small>
+                  </div>
+                </div>
+
+                <div class="stat-card">
+                  <div class="stat-icon-wrapper amber">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  </div>
+                  <div class="stat-info">
+                    <p>Tidak Berisiko</p>
+                    <h3 id="stat-mid-students" style="color: var(--risk-low-text);">—</h3>
+                    <small>Label biner dari dataset</small>
+                  </div>
+                </div>
+
+                <div class="stat-card">
+                  <div class="stat-icon-wrapper green">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </div>
+                  <div class="stat-info">
+                    <p>Model Utama</p>
+                    <h3 id="stat-low-students" style="color: var(--accent);">—</h3>
+                    <small>Status dari endpoint health</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Split -->
+              <div class="content-grid-2col">
+                <div class="card">
+                  <div class="card-header">
+                    <div>
+                    <h3 class="card-title">Mahasiswa Berlabel Berisiko</h3>
+                    <p class="section-description" style="margin: 0; font-size: 13px;">Label dari dataset backend (maksimal 50 data)</p>
+                    </div>
+                    <a href="#siswa-berisiko" class="btn-header-action" aria-label="Lihat semua data mahasiswa">
+                      <span>Lihat Semua Mahasiswa</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="data-table" id="priority-students-table">
+                      <thead>
+                        <tr>
+                      <th>Mahasiswa</th>
+                      <th>Label Risiko</th>
+                        </tr>
+                      </thead>
+                      <tbody><tr><td colspan="2">Memuat data dari API…</td></tr></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Status Algoritma EWS</h3>
+                  </div>
+                  <div style="font-size: 13.5px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background-color: var(--brand-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--brand-border);">
+                        <p id="model-status-title" style="font-weight: 600; color: var(--brand-primary); margin-bottom: 4px;">Status model menunggu backend</p>
+                      <p id="model-status-description" style="font-size: 12.5px; color: var(--text-muted);">Metrik dan status model akan dimuat dari API.</p>
+                    </div>
+
+                                        <div>
+                      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                        <p style="font-weight: 600;" id="class-dist-title">Distribusi Label Risiko</p>
+                        <span style="font-size: 11px; color: var(--text-muted);" id="class-dist-meta">Memuat data API</span>
+                      </div>
+
+                      <!-- Stacked Segmented Progress Bar -->
+                      <div class="class-dist-container">
+                        <div class="class-dist-bar" id="class-dist-bar" aria-label="Distribusi label risiko dari dataset backend">
+                          <div class="class-dist-segment high" id="dist-bar-high" style="width: 0%;"></div>
+                          <div class="class-dist-segment mid" id="dist-bar-mid" style="width: 0%;"></div>
+                          <div class="class-dist-segment low" id="dist-bar-low" style="width: 0%;"></div>
+                        </div>
+                      </div>
+
+                      <!-- Distribution Legend -->
+                      <div class="class-dist-legend">
+                        <span class="class-dist-legend-item">
+                          <span class="dot" style="background-color: var(--risk-high-accent);"></span>
+                          <strong id="legend-high-val" style="color: var(--risk-high-text);">—</strong>
+                          <span>Berisiko (<span id="legend-high-pct">—</span>)</span>
+                        </span>
+                        <span class="class-dist-legend-item">
+                          <span class="dot" style="background-color: var(--risk-mid-accent);"></span>
+                          <strong id="legend-mid-val" style="color: var(--risk-mid-text);">—</strong>
+                          <span>— (<span id="legend-mid-pct">—</span>)</span>
+                        </span>
+                        <span class="class-dist-legend-item">
+                          <span class="dot" style="background-color: var(--risk-low-accent);"></span>
+                          <strong id="legend-low-val" style="color: var(--risk-low-text);">—</strong>
+                          <span>Tidak berisiko (<span id="legend-low-pct">—</span>)</span>
+                        </span>
+                      </div>
+                    </div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+                      <a href="#prediksi" class="btn btn-primary" style="width: 100%;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        Uji Prediksi Mahasiswa Baru
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                            <!-- Supporting Row: Target Retensi & Pusat Aksi Cepat Dosen -->
+              <div class="content-grid-2col" style="margin-top: 20px;">
+                <!-- Target Retensi Semester -->
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                      Retensi Semester
+                    </h3>
+                    <span class="badge-tag">Data belum tersedia</span>
+                  </div>
+
+                  <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">
+                    Backend belum menyediakan data kelulusan atau retensi semester. Halaman ini hanya menampilkan label risiko dari dataset.
+                  </p>
+
+                  <p class="form-hint">Pengingat kelas dan ekspor laporan belum tersedia pada API.</p>
+                </div>
+
+                <!-- Feed Aktivitas Sistem Terbaru -->
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Aktivitas Sistem
+                    </h3>
+                    <span class="badge-tag">Belum tersedia</span>
+                  </div>
+
+                  <p class="section-description">Backend belum menyediakan endpoint riwayat aktivitas sistem.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- MAHASISWA VIEW -->
+            <div data-role-panel="mahasiswa" hidden>
+              <div class="student-hero-card standalone-banner">
+                <div class="student-hero-content">
+                  <h2>Ringkasan Aktivitas Belajar</h2>
+                  <p>Ringkasan XP, quest, dan lencana dimuat dari progres akun mahasiswa.</p>
+                </div>
+              </div>
+
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-icon-wrapper purple">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </div>
+                  <div class="stat-info">
+                    <p>Level Pembelajar</p>
+                    <h3 id="student-level-display">—</h3>
+                    <small id="student-xp-to-next">Memuat progres akun</small>
+                  </div>
+                </div>
+
+                <div class="stat-card">
+                  <div class="stat-icon-wrapper green">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </div>
+                  <div class="stat-info">
+                    <p>Status Retensi Akademik</p>
+                    <h3 id="student-risk-status">Tidak tersedia</h3>
+                    <small id="student-risk-note">Endpoint progres belum menyediakan label risiko.</small>
+                  </div>
+                </div>
+
+                <div class="stat-card">
+                  <div class="stat-icon-wrapper amber">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                  </div>
+                  <div class="stat-info">
+                    <p>Lencana Diraih</p>
+                    <h3 id="student-badge-count">—</h3>
+                    <small>Lencana tersimpan di backend</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-grid-2col">
+                <!-- Left: Quest Line -->
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Misi Mingguan Terkini (Quest Line)</h3>
+                    <a href="#progres-saya" class="btn-header-action" aria-label="Lihat progres belajar lengkap">
+                      <span>Lihat Progres Lengkap</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                  </div>
+                  <div class="quest-list" id="quick-quest-list"><p class="section-description">Memuat progres akun…</p></div>
+                </div>
+
+                <!-- Right: Streak Belajar & Motivasi Retensi -->
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      Streak Belajar Mingguan
+                    </h3>
+                    <span class="badge-tag" id="student-streak-status" style="background-color: var(--accent-subtle); color: var(--accent); border-color: var(--accent-border);">Data belum tersedia</span>
+                  </div>
+
+                  <p style="font-size: 13px; color: var(--text-secondary);">
+                    Backend belum menyediakan ringkasan streak belajar. Progres XP dan quest tetap bisa diperbarui lewat aktivitas.
+                  </p>
+
+                  <p class="form-hint">Ringkasan streak belum tersedia di endpoint progres.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==========================================
+               SCREEN 2: SISWA BERISIKO (DOSEN)
+               ========================================== -->
+          <section class="screen" id="siswa-berisiko" data-screen-id="siswa-berisiko" hidden>
+            <div class="section-header">
+              <div>
+                <h2 class="section-title">Inbox Risiko Mahasiswa</h2>
+                <p class="section-description">Tinjau label risiko dari dataset, cari mahasiswa, lalu buka konteks untuk melanjutkan prediksi.</p>
+              </div>
+            </div>
+
+            <div class="card student-inbox">
+              <aside class="student-inbox-views" aria-label="Filter daftar mahasiswa">
+                <span class="inbox-panel-label">TAMPILAN</span>
+                <button class="student-view-btn is-active" type="button" data-student-filter="all" aria-pressed="true"><span>Semua mahasiswa</span><strong id="student-count-all">—</strong></button>
+                <button class="student-view-btn" type="button" data-student-filter="high" aria-pressed="false"><span>Berisiko</span><strong id="student-count-risk">—</strong></button>
+                <button class="student-view-btn" type="button" data-student-filter="low" aria-pressed="false"><span>Tidak berisiko</span><strong id="student-count-safe">—</strong></button>
+                <p class="inbox-view-note">Label biner dari dataset backend. Detail fitur tidak tersedia di endpoint siswa.</p>
+              </aside>
+              <section class="student-inbox-main" aria-label="Daftar mahasiswa">
+                <div class="student-inbox-toolbar">
+                  <div>
+                    <h3>Daftar mahasiswa</h3>
+                    <p id="inbox-data-note">Memuat data API…</p>
+                  </div>
+                  <label class="student-search">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+                    <input type="search" id="student-search" aria-label="Cari ID mahasiswa" placeholder="Cari ID mahasiswa" autocomplete="off">
+                  </label>
+                </div>
+                <div class="table-responsive">
+                  <table class="data-table" id="students-table">
+                    <thead>
+                      <tr>
+                        <th>ID Mahasiswa</th>
+                        <th>Label Risiko</th>
+                      </tr>
+                    </thead>
+                    <tbody><tr><td colspan="2">Memuat daftar dari API…</td></tr></tbody>
+                  </table>
+                </div>
+              </section>
+              <aside class="student-context-panel" id="student-context-panel" aria-live="polite">
+                <span class="inbox-panel-label">KONTEKS MAHASISWA</span>
+                <div class="student-context-empty" id="student-context-empty">Pilih mahasiswa dari daftar untuk melihat ringkasan yang tersedia.</div>
+                <div id="student-context-content" hidden>
+                  <h3 id="student-context-id">—</h3>
+                  <div id="student-context-risk"></div>
+                  <p class="student-context-source">Sumber: label risiko dari dataset backend.</p>
+                  <div class="student-context-limitation">Endpoint siswa hanya mengirim ID dan label biner. Nilai, aktivitas, dan rekomendasi perlu dimasukkan pada formulir prediksi.</div>
+                  <a href="#prediksi" class="btn btn-primary student-context-action" onclick="prepareStudentPrediction()">Prediksi dengan fitur manual</a>
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          <!-- ==========================================
+               SCREEN 3: PREDIKSI (DOSEN)
+               ========================================== -->
+          <section class="screen" id="prediksi" data-screen-id="prediksi" hidden>
+            <div class="section-header">
+              <div>
+                <h2 class="section-title">Prediksi & Diagnostik Risiko Pembelajar</h2>
+                <p class="section-description">Masukkan 7 fitur secara manual untuk prediksi KNN dan MLP; backend belum menarik log LMS secara langsung.</p>
+              </div>
+
+            </div>
+
+            <div class="content-grid-2col">
+              <!-- Form Input -->
+              <div class="card">
+                <form id="prediction-form" onsubmit="runPrediction(event)">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-student-id">ID Mahasiswa (opsional)</label>
+                    <input type="text" id="inp-student-id" class="form-control" maxlength="20" autocomplete="off" />
+                    <div class="form-hint">Pilih mahasiswa dari Inbox untuk mengisi ID secara otomatis.</div>
+                  </div>
+                  <fieldset class="fieldset-custom">
+                    <legend>1. Log Aktivitas Mahasiswa</legend>
+                    <div class="form-grid-2">
+                      <div class="form-group">
+                        <label class="form-label" for="inp-akt-7h">Aktivitas 7 Hari Terakhir</label>
+                        <input type="number" id="inp-akt-7h" class="form-control" min="0" max="10000" required />
+                        <div class="form-hint">Jumlah total event klik/bacaan</div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="inp-akt-14h">Aktivitas 14 Hari Terakhir</label>
+                        <input type="number" id="inp-akt-14h" class="form-control" min="0" max="10000" required />
+                        <div class="form-hint">Total event 2 minggu observasi</div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="inp-hari-aktif">Hari Sejak Aktivitas Terakhir</label>
+                      <input type="number" id="inp-hari-aktif" class="form-control" min="0" max="42" required />
+                      <div class="form-hint">Jarak hari terakhir login sampai akhir jendela observasi</div>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="fieldset-custom">
+                    <legend>2. Kinerja & Perilaku Tugas</legend>
+                    <div class="form-grid-2">
+                      <div class="form-group">
+                        <label class="form-label" for="inp-rata-kuis">Rata-rata Nilai Tugas (0 - 100)</label>
+                        <input type="number" id="inp-rata-kuis" class="form-control" step="0.1" min="0" max="100" placeholder="Opsional" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="inp-tren-nilai">Tren Nilai Tugas</label>
+                        <input type="number" id="inp-tren-nilai" class="form-control" step="0.1" min="-100" max="100" placeholder="Opsional" />
+                        <div class="form-hint">Selisih nilai akhir vs awal (negatif = menurun)</div>
+                      </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                      <div class="form-group">
+                        <label class="form-label" for="inp-percobaan">Jumlah Tugas Dikumpulkan</label>
+                        <input type="number" id="inp-percobaan" class="form-control" min="0" max="500" required />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="inp-rasio-kuis">Rasio Tugas Selesai (0 - 1.0)</label>
+                        <input type="number" id="inp-rasio-kuis" class="form-control" step="0.01" min="0" max="1" placeholder="Opsional" />
+                        <div class="form-hint">Contoh: 0.70 berarti 70% tugas diselesaikan</div>
+                      </div>
+                    </div>
+
+                  </fieldset>
+
+                  <button type="submit" id="btn-submit-predict" class="btn btn-primary" style="width: 100%; height: 44px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                    Jalankan Prediksi Model
+                  </button>
+                </form>
+              </div>
+
+              <!-- Prediction Output -->
+              <div class="card" id="prediction-result-panel">
+                <div class="card-header">
+                  <h3 class="card-title">Hasil Prediksi Model</h3>
+                  <span class="badge-tag" id="prediction-model-tag">Menunggu prediksi</span>
+                </div>
+
+                <!-- Hero Result -->
+                <div class="prediction-hero-banner" id="res-banner">
+                  <div>
+                    <span style="font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Tingkat risiko</span>
+                    <h2 id="res-level-text" style="font-size: 24px; font-weight: 800;">Belum ada hasil</h2>
+                  </div>
+                  <div style="text-align: right;">
+                    <span style="font-size: 11.5px; font-weight: 600;">Probabilitas model utama</span>
+                    <h2 id="res-prob-text" style="font-size: 26px; font-weight: 800;">—</h2>
+                  </div>
+                </div>
+
+                <!-- Model Comparison -->
+                <div class="model-comparison-bars">
+                  <div class="model-bar-item">
+                    <div class="model-bar-label">KNN</div>
+                    <div class="model-bar-track">
+                      <div class="model-bar-fill" id="knn-bar" style="width: 0%;"></div>
+                    </div>
+                    <strong id="knn-prob-val">—</strong>
+                  </div>
+                  <div class="model-bar-item">
+                    <div class="model-bar-label">MLP</div>
+                    <div class="model-bar-track">
+                      <div class="model-bar-fill" id="mlp-bar" style="width: 0%; background-color: #3b82f6;"></div>
+                    </div>
+                    <strong id="mlp-prob-val">—</strong>
+                  </div>
+                </div>
+
+                <!-- Root Cause Analysis -->
+                <div style="margin-bottom: 20px;">
+                  <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Faktor Pemicu Risiko Terdeteksi:</h4>
+                  <ul style="padding-left: 20px; font-size: 13.5px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;" id="res-factors">
+                    <li>Jalankan prediksi untuk melihat alasan yang dikembalikan sistem.</li>
+                  </ul>
+                </div>
+
+                <!-- Recommended Intervention -->
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+                  <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Rekomendasi Intervensi ITS:</h4>
+                  <div style="background-color: #f8fafc; padding: 14px; border-radius: var(--radius-md); border-left: 4px solid var(--brand-primary); font-size: 13px;">
+                    <p id="res-recommendation">Rekomendasi backend akan tampil setelah prediksi dijalankan.</p>
+                  </div>
+                  <div style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="#ringkasan" class="btn btn-secondary btn-sm">
+                      Lihat Distribusi Kelas &rarr;
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==========================================
+               SCREEN 4: PROGRES & GAMIFIKASI (MAHASISWA)
+               ========================================== -->
+          <section class="screen gamification-screen" id="progres-saya" data-screen-id="progres-saya" hidden>
+            <div class="section-header standalone-banner">
+              <div>
+                <span class="eyebrow-label">PENCAPAIAN MAHASISWA</span>
+                <h2 class="section-title">Pusat Gamifikasi & Progres Belajar</h2>
+                <p class="section-description">Kumpulkan XP dari kuis dan modul, raih lencana adaptif, dan selesaikan tantangan mingguan.</p>
+              </div>
+            </div>
+
+            <div class="card learning-chart-card">
+              <div class="learning-chart-heading">
+                <div>
+                  <span class="eyebrow-label">RINGKASAN MINGGUAN</span>
+                  <h3 class="card-title">Aktivitas Belajar</h3>
+                  <p class="section-description">Catatan belajar selama 7 hari terakhir</p>
+                </div>
+                <span class="demo-data-tag">Menunggu endpoint</span>
+              </div>
+              <div class="learning-chart" aria-label="Agregasi aktivitas harian belum tersedia dari backend">
+                <p class="section-description">Backend belum menyediakan ringkasan aktivitas harian.</p>
+              </div>
+              <div class="learning-chart-footer"><span>Agregasi aktivitas menunggu endpoint backend</span></div>
+            </div>
+
+            <div class="gamification-grid">
+              <!-- Level & XP Sidebar Card -->
+              <div class="card level-card">
+                <div class="level-card-heading">
+                  <div class="level-circle-badge">
+                    <span>LEVEL</span>
+                    <strong id="lvl-big-num">—</strong>
+                  </div>
+                  <div class="level-name-wrap">
+                    <span class="eyebrow-label">PERJALANAN BELAJAR</span>
+                    <h3>Penjelajah ITS</h3>
+                    <p id="lvl-subtitle">Memuat progres akun</p>
+                  </div>
+                </div>
+
+                <!-- XP Progress Bar -->
+                <div class="xp-progress-block">
+                  <div class="xp-progress-labels">
+                    <span id="xp-level-label">Progres level</span>
+                    <strong id="xp-bar-text">—</strong>
+                  </div>
+                  <div class="xp-progress-track" id="xp-progress-track" role="progressbar" aria-label="Progres XP menuju level berikutnya" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div id="xp-progress-fill" style="width: 0%;"></div>
+                  </div>
+                  <small class="xp-remaining-hint" id="xp-remaining-hint">Memuat progres akun</small>
+                </div>
+
+                <div class="xp-guide">
+                  <strong>Cara mendapatkan XP</strong>
+                  <ul>
+                    <li>Kuis: +10 s.d. +20 XP, mengikuti skor</li>
+                    <li>Bacaan/Modul: +5 XP</li>
+                    <li>Remedial: +5 XP</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Quests & Badges -->
+              <div style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- Quest Line -->
+                <div class="card quest-section-card">
+                  <div class="card-header">
+                    <div>
+                      <h3 class="card-title">Quest Mingguan (Jalur Pembelajaran)</h3>
+                      <p class="section-description" style="margin: 0; font-size: 13px;">Klik checkbox untuk menyelesaikan tantangan dan mengklaim XP secara langsung</p>
+                    </div>
+                    <span class="badge-tag" id="quest-count-tag">Memuat…</span>
+                  </div>
+
+                  <div class="quest-list" id="quest-list"><p class="section-description">Memuat progres akun…</p></div>
+                </div>
+
+                <!-- Badges Gallery -->
+                <div class="card badge-section-card">
+                  <div class="card-header">
+                    <h3 class="card-title">Lencana Prestasi Adaptif (Adaptive Badges)</h3>
+                    <span class="badge-tag">3 lencana backend</span>
+                  </div>
+
+                  <div class="badge-gallery">
+                    <div class="badge-card unlocked">
+                      <div class="badge-icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                      </div>
+                      <div class="badge-info">
+                        <h4>Akurasi Tinggi</h4>
+                        <p>Rata-rata nilai kuis &ge; 85 dengan minimal menyelesaikan 3 kuis.</p>
+                        <span class="badge-status-tag">Telah diraih</span>
+                      </div>
+                    </div>
+
+                    <div class="badge-card unlocked">
+                      <div class="badge-icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      </div>
+                      <div class="badge-info">
+                        <h4>Learning Streak 7 Hari</h4>
+                        <p>Aktif login dan belajar di LMS selama 7 hari berturut-turut.</p>
+                        <span class="badge-status-tag">Telah diraih</span>
+                      </div>
+                    </div>
+
+                    <div class="badge-card locked">
+                      <div class="badge-icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      </div>
+                      <div class="badge-info">
+                        <h4>Remedial Selesai</h4>
+                        <p>Tuntaskan minimal 1 modul remedial yang direkomendasikan sistem.</p>
+                        <span style="font-size: 11px; color: var(--text-subtle);">Belum Terbuka</span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==========================================
+               SCREEN 5: RIWAYAT (MAHASISWA)
+               ========================================== -->
+          <section class="screen" id="riwayat" data-screen-id="riwayat" hidden>
+            <div class="section-header standalone-banner">
+              <div>
+                <span class="eyebrow-label">AKTIVITAS AKADEMIK</span>
+                <h2 class="section-title">Riwayat Aktivitas & Jejak Belajar</h2>
+                <p class="section-description">Ringkasan progres akun tersedia; riwayat per aktivitas menunggu endpoint backend.</p>
+              </div>
+            </div>
+
+            <div class="activity-summary-grid">
+              <div class="activity-summary-card"><span class="activity-summary-icon blue">XP</span><div><span>Total XP</span><strong id="history-total-xp">—</strong><small>tersimpan di backend</small></div></div>
+              <div class="activity-summary-card"><span class="activity-summary-icon gold">L</span><div><span>Lencana diraih</span><strong id="history-badge-count">—</strong><small>tersimpan di backend</small></div></div>
+              <div class="activity-summary-card"><span class="activity-summary-icon green">ID</span><div><span>Mahasiswa</span><strong id="history-student-id">—</strong><small>ID dari konfigurasi akun</small></div></div>
+            </div>
+
+            <div class="activity-history-layout">
+              <div class="card activity-history-card">
+                <div class="card-header activity-history-header">
+                  <div><span class="eyebrow-label">JEJAK PEMBELAJARAN</span><h3 class="card-title">Aktivitas Terbaru</h3></div>
+                  <span class="demo-data-tag">Riwayat belum didukung API</span>
+                </div>
+                <div class="timeline-list activity-timeline" id="activity-timeline"><p class="section-description">Backend belum menyediakan endpoint riwayat aktivitas.</p></div>
+              </div>
+
+              <aside class="card activity-period-card">
+                <div class="period-card-heading"><span class="eyebrow-label">PERIODE AKTIF</span><h3>Belajar lebih konsisten</h3><p>Setiap langkah kecil membangun progres akademik yang lebih kuat.</p></div>
+                <div class="period-stat"><span>Aktivitas minggu ini</span><strong>—</strong></div>
+                <div class="period-stat"><span>Rata-rata per hari</span><strong>—</strong></div>
+                <div class="period-streak"><span class="streak-flame" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-6-4-11-2 2-3 4-3 6-2-1-3-3-3-5-3 3-4 6-4 10a7 7 0 0 0 7 7Z"/><path d="M12 22a3 3 0 0 0 3-3c0-2-2-3-2-5-2 1-4 3-4 5a3 3 0 0 0 3 3Z"/></svg></span><div><strong>—</strong><span>streak belum tersedia</span></div></div>
+                <p class="period-card-note">Backend saat ini menyimpan progres, tetapi belum menyediakan endpoint riwayat aktivitas dan streak.</p>
+              </aside>
+            </div>
+          </section>
+
+          <!-- ==========================================
+               SCREEN 6: METRIK MODEL (DOSEN)
+               ========================================== -->
+          <section class="screen" id="metrik-model" data-screen-id="metrik-model" hidden>
+            <div class="section-header">
+              <div>
+                <h2 class="section-title">Evaluasi & Komparasi Model (KNN vs MLP)</h2>
+                <p class="section-description">Metrik evaluasi dimuat dari endpoint backend.</p>
+              </div>
+            </div>
+
+            <!-- Metric Highlight Grid -->
+            <div class="metric-cards-grid">
+              <div class="metric-stat-box focal-recall">
+                <div class="metric-name">Recall Berisiko (Target Utama)</div>
+                <div class="metric-val" style="color: #1e40af;">—</div>
+                <span class="metric-winner-tag">Menunggu API</span>
+              </div>
+
+              <div class="metric-stat-box">
+                <div class="metric-name">Akurasi Keseluruhan</div>
+                <div class="metric-val">—</div>
+                <span class="metric-winner-tag">Menunggu API</span>
+              </div>
+
+              <div class="metric-stat-box">
+                <div class="metric-name">ROC-AUC Score</div>
+                <div class="metric-val">—</div>
+                <span class="metric-winner-tag">Menunggu API</span>
+              </div>
+
+              <div class="metric-stat-box">
+                <div class="metric-name">F1-Score</div>
+                <div class="metric-val">—</div>
+                <span class="metric-winner-tag">Menunggu API</span>
+              </div>
+            </div>
+
+            <!-- Comparison Table & Confusion Matrix -->
+            <div class="content-grid-2col">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Tabel Perbandingan Metrik Uji Lengkap</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Metrik Evaluasi</th>
+                        <th>KNN</th>
+                        <th>MLP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Akurasi</strong></td>
+                        <td>—</td>
+                        <td>—</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Presisi</strong></td>
+                        <td>—</td>
+                        <td>—</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Recall (Sensitivitas)</strong></td>
+                        <td>—</td>
+                        <td>—</td>
+                      </tr>
+                      <tr>
+                        <td><strong>F1-Score</strong></td>
+                        <td>—</td>
+                        <td>—</td>
+                      </tr>
+                      <tr>
+                        <td><strong>ROC-AUC</strong></td>
+                        <td>—</td>
+                        <td>—</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style="margin-top: 16px; font-size: 12.5px; color: var(--text-muted);">
+                  Metrik dan model utama akan ditampilkan sesuai respons backend.
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Confusion Matrix Model Utama</h3>
+                </div>
+                <table class="confusion-matrix-table">
+                  <tr>
+                    <td></td>
+                    <td style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Prediksi Aman</td>
+                    <td style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Prediksi Berisiko</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: right;">Aktual Aman</td>
+                    <td class="cm-cell hit">
+                      <strong>—</strong>
+                      <span>True Negative (TN)</span>
+                    </td>
+                    <td class="cm-cell miss">
+                      <strong>—</strong>
+                      <span>False Positive (FP)</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: right;">Aktual Berisiko</td>
+                    <td class="cm-cell miss">
+                      <strong>—</strong>
+                      <span>False Negative (FN)</span>
+                    </td>
+                    <td class="cm-cell hit">
+                      <strong>—</strong>
+                      <span>True Positive (TP)</span>
+                    </td>
+                  </tr>
+                </table>
+
+                <div style="font-size: 12.5px; color: var(--text-muted); background-color: #f8fafc; padding: 12px; border-radius: var(--radius-md); margin-top: 12px;">
+                  Confusion matrix akan dimuat dari metrik model backend.
+                </div>
+              </div>
+            </div>
+
+            <!-- Disclaimer box -->
+            <div class="card" style="margin-top: 24px; border-left: 4px solid #f59e0b;">
+              <h4 style="font-size: 14px; font-weight: 600; color: #b45309; margin-bottom: 6px;">Catatan Keterbatasan Akademik</h4>
+              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                Model dilatih pada fitur aktivitas dan nilai dari dataset OULAD yang telah diproses. Metrik ini mengevaluasi dataset tersebut, bukan validasi operasional ITS, sehingga hasilnya tetap perlu ditinjau dosen pengampu.
+              </p>
+            </div>
+          </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="app-footer">
+          <p><strong>EWS ITS (Early Warning System)</strong> — Intelligent Tutoring System · Institut Teknologi Sepuluh Nopember</p>
+          <p style="color: var(--text-subtle); margin-top: 4px;">Peringatan: Keputusan sistem bersifat rekomendasi bantuan awal, bukan keputusan kelulusan resmi.</p>
+        </footer>
+      </div>
+    </div>
+
+    <!-- STUDENT DIAGNOSTIC DETAIL DRAWER (MODAL) -->
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+  </body>
+</html>
