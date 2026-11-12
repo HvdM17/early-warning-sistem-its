@@ -51,7 +51,17 @@ D:\Project\ews_its\
 ├── frontend\
 │   ├── index.html         # satu halaman, berisi semua bagian UI + disclaimer
 │   ├── css\style.css
-│   └── js\app.js          # semua pemanggilan fetch dan render
+│   └── js\                 # modul JavaScript frontend
+│       ├── app.js          # entry point dan inisialisasi
+│       ├── state.js        # konfigurasi dan state bersama
+│       ├── api.js          # fetch ke backend
+│       ├── ui.js           # helper UI bersama
+│       ├── navigation.js   # navigasi layar
+│       ├── students.js     # daftar dan filter mahasiswa
+│       ├── metrics.js      # render metrik model
+│       ├── prediction.js   # form dan hasil prediksi
+│       ├── progress.js     # progres dan quest mahasiswa
+│       └── dashboard.js    # muat data awal dashboard
 ├── models\                # artefak hasil training (wajib ada saat runtime)
 │   ├── knn_model.joblib
 │   ├── mlp_model.joblib
@@ -89,7 +99,10 @@ Catatan: pada tahap awal, `backend\storage.py` dan `tests\` belum ada di scaffol
 | `predictor.py` | Memuat artefak sekali saat startup, menjalankan scaler lalu model, mengembalikan probabilitas. | Menangani HTTP atau menyimpan progress. |
 | `gamification.py` | Fungsi murni: XP, level, badge, progress, rekomendasi intervensi. Mudah diuji. | Membaca file atau memanggil model. |
 | `storage.py` | Membaca dan menulis `data/progress.json` dengan kunci `student_id`. | Berisi aturan gamifikasi. |
-| `app.js` | Membangun body JSON, memanggil fetch, lalu merender hasil tanpa reload. | Menghitung ulang label atau XP sendiri. |
+| `app.js` | Menginisialisasi modul frontend. | Menampung logika layar atau API. |
+| `api.js` | Mengirim request ke backend dan menangani error HTTP. | Merender elemen UI. |
+| `students.js`, `metrics.js`, `prediction.js`, `progress.js` | Menangani tampilan dan aksi per fitur. | Menghitung ulang label atau XP sendiri. |
+| `state.js`, `ui.js`, `navigation.js`, `dashboard.js` | Menyediakan state/helper, navigasi, dan pemuatan data awal. | Mengubah aturan bisnis backend. |
 
 Prinsipnya: aturan bisnis ada di `gamification.py` dan `predictor.py`, sedangkan `main.py` hanya perantara HTTP.
 
@@ -323,6 +336,7 @@ Disclaimer ditampilkan di footer setiap halaman.
 
 Aturan UI:
 - Tidak memakai framework JavaScript atau library CSS.
+- JavaScript memakai ES modules native browser; `app.js` mengimpor modul sesuai fitur.
 - Layout dengan CSS Grid dan Flexbox, responsif dengan `@media`.
 - Semua pemanggilan server memakai `fetch` dengan path relatif (`/api/...`).
 

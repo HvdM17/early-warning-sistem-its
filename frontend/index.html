@@ -7,7 +7,7 @@
     <title>EWS ITS — Sistem Peringatan Dini & Gamifikasi Pembelajar</title>
     <link rel="stylesheet" href="css/style.css" />
     <!-- Server may inject window.EWS_CONFIG = { role, studentId, apiBase } before this script. -->
-    <script src="js/app.js" defer></script>
+    <script type="module" src="js/app.js"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -386,7 +386,7 @@
                   <div id="student-context-risk"></div>
                   <p class="student-context-source">Sumber: label risiko dari dataset backend.</p>
                   <div class="student-context-limitation">Endpoint siswa hanya mengirim ID dan label biner. Nilai, aktivitas, dan rekomendasi perlu dimasukkan pada formulir prediksi.</div>
-                  <a href="#prediksi" class="btn btn-primary student-context-action" onclick="prepareStudentPrediction()">Prediksi dengan fitur manual</a>
+                  <a href="#prediksi" class="btn btn-primary student-context-action">Prediksi dengan fitur manual</a>
                 </div>
               </aside>
             </div>
@@ -407,7 +407,7 @@
             <div class="content-grid-2col">
               <!-- Form Input -->
               <div class="card">
-                <form id="prediction-form" onsubmit="runPrediction(event)">
+                <form id="prediction-form">
                   <div class="form-group">
                     <label class="form-label" for="inp-student-id">ID Mahasiswa (opsional)</label>
                     <input type="text" id="inp-student-id" class="form-control" maxlength="20" autocomplete="off" />
