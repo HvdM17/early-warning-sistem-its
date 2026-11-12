@@ -3,6 +3,8 @@ from fastapi.testclient import TestClient
 
 from backend.main import app
 from backend import storage
+from backend.gamification import default_progress, update_progress
+from backend.schemas import Intervention, PredictResponse, PredictionResult
 
 
 client = TestClient(app)
@@ -132,3 +134,50 @@ def test_tc15_health_reports_loaded_models():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["model_loaded"] is True
+
+
+def test_tc16_students_returns_model_predictions_without_target_label():
+    response = client.get("/api/students")
+    assert response.status_code == 200
+    item = response.json()[0]
+    assert set(item) == {"student_id", "risk_label", "risk_level", "probability", "primary_model"}
+    assert "at_risk" not in item
+    assert item["student_id"] == "S-00001"
+
+
+def test_tc17_metrics_returns_both_models():
+    response = client.get("/api/metrics")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["primary_model"] == "knn"
+    assert "knn" in body and "mlp" in body
+
+
+def test_tc18_seven_consecutive_days_award_streak_badge():
+    progress = default_progress()
+    for day in range(7):
+        progress, _, badges = update_progress(progress, "bacaan", None, None, f"2026-11-{12 + day:02d}")
+    assert "Learning Streak 7 Hari" in badges
+
+
+def test_tc19_risk_drop_awards_back_on_track_badge(monkeypatch):
+    high = PredictResponse(
+        student_id="S-RISK",
+        prediction=PredictionResult(label="berisiko", risk_level="tinggi", probability=0.8, per_model={"knn": 0.8, "mlp": 0.8}, primary_model="knn"),
+        explanation=[],
+        intervention=Intervention(message="", quest=[]),
+    )
+    low = PredictResponse(
+        student_id="S-RISK",
+        prediction=PredictionResult(label="tidak_berisiko", risk_level="rendah", probability=0.2, per_model={"knn": 0.2, "mlp": 0.2}, primary_model="knn"),
+        explanation=[],
+        intervention=Intervention(message="", quest=[]),
+    )
+    responses = iter([high, low])
+    monkeypatch.setattr("backend.main.predict", lambda request: next(responses))
+    payload = valid_payload(student_id="S-RISK")
+    assert client.post("/api/predict", json=payload).status_code == 200
+    assert client.post("/api/predict", json=payload).status_code == 200
+    progress = client.get("/api/progress/S-RISK")
+    assert progress.status_code == 200
+    assert "Kembali ke Jalur" in progress.json()["badges"]

@@ -87,4 +87,7 @@ class HealthResponse(BaseModel):
 class StudentSummary(BaseModel):
     student_id: str
     risk_label: Literal["berisiko", "tidak_berisiko"]
+    risk_level: Literal["rendah", "sedang", "tinggi"]
+    probability: float = Field(ge=0, le=1)
+    primary_model: str
 
