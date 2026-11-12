@@ -1,6 +1,7 @@
 import json
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -11,17 +12,19 @@ from .predictor import is_model_loaded, model_status, predict
 from .schemas import (
     ActivityRequest,
     ActivityResponse,
+    HealthResponse,
     PredictRequest,
     PredictResponse,
     ProgressResponse,
     QuestItem,
+    StudentSummary,
 )
 from .storage import read_progress, write_progress
 
 app = FastAPI(title="EWS ITS")
 ROOT = Path(__file__).resolve().parents[1]
 
-@app.get("/health")
+@app.get("/health", response_model=HealthResponse)
 def health():
     return model_status()
 
@@ -73,7 +76,7 @@ def api_progress(student_id: str):
     )
 
 
-@app.get("/api/students")
+@app.get("/api/students", response_model=list[StudentSummary])
 def api_students():
     dataset_path = ROOT / "data" / "processed" / "dataset.csv"
     if not dataset_path.exists():
@@ -85,7 +88,7 @@ def api_students():
     ]
 
 
-@app.get("/api/metrics")
+@app.get("/api/metrics", response_model=dict[str, Any])
 def api_metrics():
     metrics_path = ROOT / "models" / "metrics.json"
     if not metrics_path.exists():

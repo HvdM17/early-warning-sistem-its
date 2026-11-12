@@ -75,3 +75,16 @@ class ProgressResponse(BaseModel):
     badges: list[str]
     progress_percent: int
     quest: list[QuestItem]
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok"]
+    model_loaded: bool
+    models: list[str]
+    primary_model: str
+
+
+class StudentSummary(BaseModel):
+    student_id: str
+    risk_label: Literal["berisiko", "tidak_berisiko"]
+
