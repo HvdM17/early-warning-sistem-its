@@ -58,30 +58,36 @@ N_SPLITS = 5
 K_CANDIDATES = [3, 5, 7, 9, 11, 15]
 THRESHOLD = 0.5               # probabilitas minimum untuk label "berisiko"
 MLP_HIDDEN = (32, 16)
-MLP_MAX_ITER = 2000
-# Catatan: early_stopping tidak dipakai. Dengan data latih sekitar 400 baris, validation split
-# (10% dari data latih) hanya sekitar 40 baris, dan training berhenti terlalu dini (sekitar 12 iterasi)
-# sehingga model hanya menebak kelas mayoritas. Solver lbfgs dipakai karena dianjurkan untuk dataset kecil.
+MLP_MAX_ITER = 200
+# Catatan: adam dengan early stopping. Data latih OULAD sekitar 24.000 baris, sehingga validation
+# split (10%) cukup besar. Pada data sebesar ini lbfgs tidak konvergen dalam 2000 iterasi dan jauh
+# lebih lambat. Konfigurasi ini sama dengan 03b_ablasi_tren.py, supaya MLP identik.
 
 ROOT = Path(__file__).resolve().parents[1]
 PROCESSED_DIR = ROOT / "data" / "processed"
 MODELS_DIR = ROOT / "models"
 
-# Harus sama dengan FEATURE_COLUMNS di 02_preprocessing.py dan urutan di predictor.py
-FEATURE_COLUMNS = [
-    "aktivitas_7h",
-    "aktivitas_14h",
-    "hari_sejak_aktif",
-    "rata_nilai_kuis",
-    "tren_nilai",
-    "jumlah_percobaan_kuis",
-    "rasio_kuis_selesai",
-    "rata_durasi_menit",
-]
+KEY_COLUMNS = ["code_module", "code_presentation", "id_student"]
+
+# Daftar fitur final ditentukan oleh 03b_ablasi_tren.py dan disimpan di feature_selection.json.
+# Urutan di file ini juga menjadi urutan kolom di predictor.py.
+FEATURE_SELECTION_PATH = MODELS_DIR / "feature_selection.json"
+
+
+def load_feature_columns() -> list[str]:
+    if not FEATURE_SELECTION_PATH.exists():
+        raise FileNotFoundError(
+            f"{FEATURE_SELECTION_PATH.name} belum ada. Jalankan training\\03b_ablasi_tren.py terlebih dahulu."
+        )
+    config = json.loads(FEATURE_SELECTION_PATH.read_text(encoding="utf-8"))
+    return list(config["features"])
+
+
+FEATURE_COLUMNS = load_feature_columns()
 
 
 def load_dataset() -> tuple[pd.DataFrame, pd.Series]:
-    df = pd.read_csv(PROCESSED_DIR / "dataset.csv", index_col="userid")
+    df = pd.read_csv(PROCESSED_DIR / "dataset.csv")
     missing_cols = set(FEATURE_COLUMNS + ["at_risk"]) - set(df.columns)
     if missing_cols:
         raise ValueError(f"Kolom tidak ditemukan di dataset.csv: {sorted(missing_cols)}")
@@ -141,7 +147,10 @@ def main() -> None:
         MLPClassifier(
             hidden_layer_sizes=MLP_HIDDEN,
             activation="relu",
-            solver="lbfgs",
+            solver="adam",
+            early_stopping=True,
+            validation_fraction=0.1,
+            n_iter_no_change=10,
             max_iter=MLP_MAX_ITER,
             random_state=SEED,
         )
