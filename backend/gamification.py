@@ -22,11 +22,23 @@ def default_progress() -> dict:
     return {
         "total_xp": 0,
         "badges": [],
+        "last_risk_level": None,
         "quest": [{"id": key, "title": title, "done": False} for key, title in DEFAULT_QUEST],
         "quiz_scores": [],
         "remedial_items": [],
         "active_days": [],
     }
+
+
+def record_risk_level(progress: dict, risk_level: str) -> list[str]:
+    previous = progress.get("last_risk_level")
+    progress.setdefault("badges", [])
+    before = set(progress["badges"])
+    if previous in {"sedang", "tinggi"} and risk_level == "rendah":
+        if "Kembali ke Jalur" not in progress["badges"]:
+            progress["badges"].append("Kembali ke Jalur")
+    progress["last_risk_level"] = risk_level
+    return [badge for badge in progress["badges"] if badge not in before]
 
 
 def level_for(total_xp: int) -> int:
