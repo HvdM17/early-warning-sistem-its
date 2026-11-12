@@ -1,0 +1,57 @@
+{
+  "seed": 42,
+  "test_size": 0.2,
+  "n_train": 400,
+  "n_test": 100,
+  "positive_rate_train": 0.625,
+  "positive_rate_test": 0.62,
+  "primary_model": "knn",
+  "knn": {
+    "best_k": 11,
+    "k_candidates": [
+      3,
+      5,
+      7,
+      9,
+      11,
+      15
+    ],
+    "cv_recall": 0.8879999999999999,
+    "test": {
+      "model": "KNN",
+      "accuracy": 0.83,
+      "precision": 0.835820895522388,
+      "recall": 0.9032258064516129,
+      "f1": 0.8682170542635659,
+      "roc_auc": 0.9168081494057726,
+      "confusion_matrix": {
+        "tn": 27,
+        "fp": 11,
+        "fn": 6,
+        "tp": 56
+      }
+    }
+  },
+  "mlp": {
+    "hidden_layers": [
+      32,
+      16
+    ],
+    "cv_recall_mean": 0.8560000000000001,
+    "cv_recall_std": 0.04630334761116091,
+    "test": {
+      "model": "MLP",
+      "accuracy": 0.87,
+      "precision": 0.8888888888888888,
+      "recall": 0.9032258064516129,
+      "f1": 0.896,
+      "roc_auc": 0.8866723259762309,
+      "confusion_matrix": {
+        "tn": 31,
+        "fp": 7,
+        "fn": 6,
+        "tp": 56
+      }
+    }
+  }
+}
