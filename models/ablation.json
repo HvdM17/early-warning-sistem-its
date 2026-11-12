@@ -1,0 +1,129 @@
+{
+  "seed": 42,
+  "aturan": "Selisih recall CV berpasangan per fold. tren_nilai dibuang jika |dbar| <= 2*SE untuk KEDUA model. Keputusan dari CV data latih saja.",
+  "pola_kekosongan_tren_nilai": {
+    "kosong_keseluruhan": 0.7484,
+    "label_rate_saat_kosong": 0.5338,
+    "label_rate_saat_ada_nilai": 0.3426,
+    "per_code_module": {
+      "AAA": 0.9973,
+      "BBB": 0.8522,
+      "CCC": 0.4697,
+      "DDD": 0.6395,
+      "EEE": 1.0,
+      "FFF": 0.6796,
+      "GGG": 1.0
+    },
+    "per_code_presentation": {
+      "2013B": 0.6673,
+      "2013J": 0.9079,
+      "2014B": 0.6929,
+      "2014J": 0.6946
+    }
+  },
+  "cv_data_latih": {
+    "dengan_tren": {
+      "knn_best_k": 3,
+      "knn_cv_recall_mean": 0.653,
+      "mlp_cv_recall_mean": 0.6418
+    },
+    "tanpa_tren": {
+      "knn_best_k": 3,
+      "knn_cv_recall_mean": 0.6535,
+      "mlp_cv_recall_mean": 0.6486
+    },
+    "per_model": {
+      "knn": {
+        "cv_recall_dengan_tren": 0.653,
+        "cv_recall_tanpa_tren": 0.6535,
+        "selisih_rata_per_fold": -0.0005,
+        "galat_standar": 0.0023,
+        "batas_2_galat_standar": 0.0045,
+        "dalam_batas": true
+      },
+      "mlp": {
+        "cv_recall_dengan_tren": 0.6418,
+        "cv_recall_tanpa_tren": 0.6486,
+        "selisih_rata_per_fold": -0.0068,
+        "galat_standar": 0.0024,
+        "batas_2_galat_standar": 0.0049,
+        "dalam_batas": false
+      }
+    }
+  },
+  "keputusan": {
+    "buang_tren_nilai": false,
+    "fitur_final": [
+      "aktivitas_7h",
+      "aktivitas_14h",
+      "hari_sejak_aktif",
+      "rata_nilai_tugas",
+      "tren_nilai",
+      "jumlah_tugas_dikumpulkan",
+      "rasio_tugas_selesai"
+    ]
+  },
+  "data_uji_untuk_laporan": {
+    "n_test": 5983,
+    "dengan_tren": [
+      {
+        "model": "KNN",
+        "accuracy": 0.6882834698311884,
+        "precision": 0.6919955735890815,
+        "recall": 0.6455609084652443,
+        "f1": 0.6679722271675271,
+        "roc_auc": 0.735652380369775,
+        "confusion_matrix": {
+          "tn": 2242,
+          "fp": 835,
+          "fn": 1030,
+          "tp": 1876
+        }
+      },
+      {
+        "model": "MLP",
+        "accuracy": 0.7330770516463313,
+        "precision": 0.7849368741837179,
+        "recall": 0.6204404679972471,
+        "f1": 0.69306169517586,
+        "roc_auc": 0.8083152403295906,
+        "confusion_matrix": {
+          "tn": 2583,
+          "fp": 494,
+          "fn": 1103,
+          "tp": 1803
+        }
+      }
+    ],
+    "tanpa_tren": [
+      {
+        "model": "KNN",
+        "accuracy": 0.684940665218118,
+        "precision": 0.6870648589226823,
+        "recall": 0.6452167928423951,
+        "f1": 0.6654835847382431,
+        "roc_auc": 0.7341952850008757,
+        "confusion_matrix": {
+          "tn": 2223,
+          "fp": 854,
+          "fn": 1031,
+          "tp": 1875
+        }
+      },
+      {
+        "model": "MLP",
+        "accuracy": 0.7387598194885509,
+        "precision": 0.7796751353602666,
+        "recall": 0.6441844459738472,
+        "f1": 0.7054833239118146,
+        "roc_auc": 0.8080434818104083,
+        "confusion_matrix": {
+          "tn": 2548,
+          "fp": 529,
+          "fn": 1034,
+          "tp": 1872
+        }
+      }
+    ]
+  }
+}

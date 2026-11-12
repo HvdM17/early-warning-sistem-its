@@ -6,3 +6,4 @@ __pycache__/
 .env
 .env.*
 data/progress.json
+data/raw_oulad/

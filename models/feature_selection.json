@@ -1,0 +1,13 @@
+{
+  "features": [
+    "aktivitas_7h",
+    "aktivitas_14h",
+    "hari_sejak_aktif",
+    "rata_nilai_tugas",
+    "tren_nilai",
+    "jumlah_tugas_dikumpulkan",
+    "rasio_tugas_selesai"
+  ],
+  "buang_tren_nilai": false,
+  "sumber": "03b_ablasi_tren.py"
+}

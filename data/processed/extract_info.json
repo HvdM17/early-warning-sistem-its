@@ -1,0 +1,26 @@
+{
+  "unit": "pendaftaran (code_module, code_presentation, id_student)",
+  "window_days": [
+    0,
+    41
+  ],
+  "outcome": "at_risk=1 jika final_result Fail atau Withdrawn",
+  "pendaftaran_awal": 32593,
+  "excluded_early_unregistration": 2678,
+  "excluded_unknown_label": 0,
+  "pendaftaran_akhir": 29915,
+  "tugas_banked_dikeluarkan": 1909,
+  "tugas_tanpa_info_modul_dikeluarkan": 0,
+  "n_dataset": 29915,
+  "label_positif": 14530,
+  "label_positif_rate": 0.4857,
+  "missing_per_fitur": {
+    "aktivitas_7h": 0,
+    "aktivitas_14h": 0,
+    "hari_sejak_aktif": 0,
+    "rata_nilai_tugas": 6984,
+    "tren_nilai": 22387,
+    "jumlah_tugas_dikumpulkan": 0,
+    "rasio_tugas_selesai": 2469
+  }
+}
