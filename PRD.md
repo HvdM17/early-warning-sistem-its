@@ -187,7 +187,7 @@ Rekomendasi ditampilkan sebagai teks dan daftar quest, bukan keputusan otomatis.
 
 ## 12. Rencana Pengujian
 
-Minimal 12 test case. Dokumen ini memakai 15.
+Minimal 12 test case. Rencana awal memakai 15; implementasi saat ini memiliki 19 test case.
 
 | ID | Jenis | Kondisi | Hasil yang diharapkan |
 |---|---|---|---|
@@ -206,6 +206,10 @@ Minimal 12 test case. Dokumen ini memakai 15.
 | TC-13 | Gamifikasi | Item remedial diselesaikan | Progres bertambah, badge "Remedial Selesai" diberikan |
 | TC-14 | Sistem | `/api/predict` saat model belum ada | HTTP 503 dengan pesan jelas |
 | TC-15 | Sistem | `GET /health` | HTTP 200, `model_loaded: true` |
+| TC-16 | Sistem | `GET /api/students` | Daftar anonim berisi hasil prediksi model tanpa kolom `at_risk` |
+| TC-17 | Sistem | `GET /api/metrics` | Metrik KNN dan MLP tersedia |
+| TC-18 | Gamifikasi | Aktivitas pada 7 hari berturut-turut | Badge "Learning Streak 7 Hari" diberikan |
+| TC-19 | Gamifikasi | Risiko turun dari tinggi/sedang menjadi rendah | Badge "Kembali ke Jalur" diberikan satu kali |
 
 Pengujian memakai `pytest` dan `fastapi.testclient`. Hasil dicantumkan di Bab IV, termasuk screenshot desktop dan mobile.
 

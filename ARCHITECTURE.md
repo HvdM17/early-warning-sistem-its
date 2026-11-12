@@ -212,7 +212,21 @@ Mengembalikan status gamifikasi lengkap satu siswa: total XP, level, badge, prog
 
 ### 4.5 `GET /api/students` (dianjurkan)
 
-Mengembalikan daftar pendaftaran contoh dari `dataset.csv` (kunci dan level risiko dari hasil prediksi). Hanya kunci anonim yang ditampilkan, tanpa data pribadi.
+Mengembalikan maksimal 50 pendaftaran contoh dari `dataset.csv`. Risiko dihitung ulang dari pipeline model yang sama dengan `/api/predict`; kolom `at_risk` dan `final_result` tidak digunakan untuk response. ID OULAD asli tidak ditampilkan.
+
+Respons 200:
+
+```json
+[
+  {
+    "student_id": "S-00001",
+    "risk_label": "berisiko",
+    "risk_level": "tinggi",
+    "probability": 0.82,
+    "primary_model": "knn"
+  }
+]
+```
 
 ### 4.6 `GET /api/metrics` (dianjurkan)
 
@@ -272,6 +286,8 @@ storage.py: tulis progress.json (penulisan atomik)
    ▼
 Respons → app.js: animasi XP, level, badge baru
 ```
+
+Pada `POST /api/predict` dengan `student_id`, backend juga menyimpan `last_risk_level`. Jika level sebelumnya sedang atau tinggi lalu prediksi baru rendah, badge `Kembali ke Jalur` diberikan satu kali.
 
 ## 6. Aturan Rekomendasi Intervensi
 
@@ -402,5 +418,5 @@ Laragon tidak diperlukan.
 5. `gamification.py` dan `storage.py`, uji dengan `/api/activity`.
 6. `main.py` lengkap dan mount frontend.
 7. Frontend sesuai DESIGN.md.
-8. `tests/test_api.py` (15 test case).
+8. `tests/test_api.py` (19 test case).
 9. README dan dokumen laporan.
