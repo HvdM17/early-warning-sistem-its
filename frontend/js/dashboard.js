@@ -25,6 +25,8 @@ export async function initDashboard() {
   subscribe((event, payload) => {
     if (event === 'role_changed') {
       renderRingkasanPerRole(payload);
+    } else if (event === 'student_id_changed' || event === 'progress_updated') {
+      renderStudentDashboard();
     } else if (event === 'section_changed' && payload === 'metrik-model') {
       // Pastikan chart di-render ulang/resize saat section dibuka
       if (barChartInstance) barChartInstance.resize();
@@ -86,6 +88,87 @@ function renderClassSummary(list) {
   });
 
   summaryEl.textContent = `${counts.tinggi} berisiko tinggi, ${counts.sedang} sedang, ${counts.rendah} rendah (dari ${list.length} sampel pendaftaran OULAD).`;
+  renderRiskOverview(counts, list.length);
+}
+
+function renderRiskOverview(counts, total) {
+  const donut = document.getElementById('riskDonut');
+  if (!donut || !total) return;
+
+  const high = counts.tinggi || 0;
+  const mid = counts.sedang || 0;
+  const low = counts.rendah || 0;
+  const highEnd = (high / total) * 360;
+  const midEnd = ((high + mid) / total) * 360;
+  const atRiskPercent = Math.round(((high + mid) / total) * 100);
+  donut.style.background = `conic-gradient(#FF626A 0deg ${highEnd}deg, #FFC94D ${highEnd}deg ${midEnd}deg, #39C98A ${midEnd}deg 360deg)`;
+
+  const percentEl = document.getElementById('riskPercent');
+  if (percentEl) percentEl.textContent = `${atRiskPercent}%`;
+  [
+    ['riskHighCount', high],
+    ['riskMidCount', mid],
+    ['riskLowCount', low]
+  ].forEach(([id, count]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = `${count} (${Math.round((count / total) * 100)}%)`;
+  });
+}
+
+function renderStudentDashboard() {
+  const progress = appState.studentProgress;
+  const studentId = appState.studentId;
+  const progressMatchesStudent = progress && studentId && progress.student_id === studentId;
+  const progressRing = document.getElementById('studentProgressRing');
+  const percentEl = document.getElementById('studentProgressPercent');
+  const progressCopy = document.getElementById('studentProgressCopy');
+  const questNotice = document.getElementById('studentQuestNotice');
+  const modelNotice = document.getElementById('studentModelNotice');
+  const riskCopy = document.getElementById('studentRiskCopy');
+
+  const percent = progressMatchesStudent
+    ? Math.max(0, Math.min(100, Number(progress.progress_percent) || 0))
+    : null;
+  if (progressRing) progressRing.style.setProperty('--progress-value', `${percent ?? 0}%`);
+  if (percentEl) percentEl.textContent = percent === null ? '—' : `${percent}%`;
+
+  if (progressCopy) {
+    if (!studentId) {
+      progressCopy.textContent = 'Hubungkan identitas mahasiswa untuk melihat progres.';
+    } else if (!progressMatchesStudent) {
+      progressCopy.textContent = `Progres pembelajaran untuk ${studentId} belum dimuat.`;
+    } else {
+      const quests = Array.isArray(progress.quest) ? progress.quest : [];
+      const completed = quests.filter(item => item.done).length;
+      progressCopy.textContent = `${completed} dari ${quests.length} quest selesai · ${Number(progress.total_xp) || 0} XP terkumpul.`;
+    }
+  }
+
+  if (questNotice) {
+    if (!progressMatchesStudent) {
+      questNotice.textContent = studentId
+        ? 'Buka progres untuk memuat quest dan aktivitas belajar.'
+        : 'Progres dan aktivitas belajar tersedia di halaman mahasiswa.';
+    } else {
+      const quests = Array.isArray(progress.quest) ? progress.quest : [];
+      questNotice.textContent = `${quests.filter(item => item.done).length} dari ${quests.length} quest pembelajaran telah selesai.`;
+    }
+  }
+
+  if (modelNotice) {
+    modelNotice.textContent = appState.modelStatus?.model_loaded
+      ? `Model ${String(appState.modelStatus.primary_model || '').toUpperCase()} siap untuk prediksi risiko.`
+      : 'Status model sedang diperiksa.';
+  }
+
+  if (riskCopy) {
+    const student = studentId && appState.students.find(item => item.student_id === studentId);
+    riskCopy.textContent = student
+      ? `Status risiko: ${student.risk_level} · probabilitas ${Math.round(student.probability * 100)}%.`
+      : studentId
+        ? 'Belum ada prediksi risiko untuk identitas ini.'
+        : 'Hubungkan identitas untuk melihat ringkasan prediksi risiko.';
+  }
 }
 
 function renderTopRiskStudents(list) {
@@ -640,6 +723,7 @@ function renderRingkasanPerRole(role) {
   if (role === 'mahasiswa') {
     if (dosenView) dosenView.style.display = 'none';
     if (mhsView) mhsView.style.display = 'block';
+    renderStudentDashboard();
   } else {
     if (dosenView) dosenView.style.display = 'block';
     if (mhsView) mhsView.style.display = 'none';

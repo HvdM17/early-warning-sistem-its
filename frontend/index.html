@@ -92,60 +92,83 @@
         <section class="app-section" id="ringkasan">
           <!-- Tampilan Ringkasan Dosen -->
           <div id="ringkasanDosenWrapper">
-            <div class="content-grid">
-              <div class="card card-span-2">
-                <div class="card-header flex-between">
-                  <div>
-                    <h2 class="card-title">Perlu Perhatian Sekarang</h2>
-                    <p class="card-desc">Lima mahasiswa dengan risiko tertinggi yang memerlukan tindakan intervensi segera.</p>
-                  </div>
-                  <button type="button" class="btn btn-secondary btn-sm" data-nav-target="siswa-berisiko">Lihat Semua Siswa</button>
-                </div>
-                <div class="card-body">
-                  <div class="table-container" id="topRiskContainer">
-                    <p class="placeholder-text">Memuat data ringkasan risiko...</p>
-                  </div>
-                </div>
+            <div class="dashboard-hero dashboard-hero-lecturer">
+              <div class="dashboard-hero-copy">
+                <span class="dashboard-eyebrow">EWS ITS · DASHBOARD DOSEN</span>
+                <h2>Pantau dan Analisis<br>Risiko Mahasiswa</h2>
+                <p>Dukung proses pembelajaran dengan data yang akurat.</p>
+                <button type="button" class="btn btn-primary btn-sm" data-nav-target="siswa-berisiko">Lihat Detail <span aria-hidden="true">→</span></button>
               </div>
-
-              <div class="card">
-                <div class="card-header">
-                  <h2 class="card-title">Ringkasan Kelas</h2>
-                </div>
-                <div class="card-body">
-                  <p class="summary-sentence" id="classSummarySentence">Memuat data kelas...</p>
-                  <p class="data-timestamp">Jendela Waktu: Hari 0 - 41 (Enam Minggu Pertama)</p>
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="card-header">
-                  <h2 class="card-title">Model Utama Aktif</h2>
-                </div>
-                <div class="card-body">
-                  <p class="model-info-text" id="primaryModelInfo">Memeriksa status model...</p>
-                  <button type="button" class="btn btn-secondary mt-12" data-nav-target="metrik-model">Lihat Evaluasi Metrik</button>
-                </div>
-              </div>
+              <svg class="dashboard-hero-art" viewBox="0 0 520 250" role="img" aria-label="Ilustrasi dosen menganalisis grafik risiko mahasiswa">
+                <defs><linearGradient id="lecturerScreen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#E8EDFF"/></linearGradient><linearGradient id="lecturerJacket" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4D6DB8"/><stop offset="1" stop-color="#233F82"/></linearGradient></defs>
+                <circle cx="422" cy="55" r="47" fill="#DCE5FF" opacity=".8"/><circle cx="68" cy="197" r="35" fill="#D8E8FF" opacity=".72"/>
+                <rect x="187" y="25" width="273" height="126" rx="18" fill="url(#lecturerScreen)" stroke="#A9BCFF" stroke-width="4"/><path d="M210 126V96h28v30m14 0V76h28v50m14 0V58h28v68m14 0V44h28v82" fill="#B8C9FF" opacity=".66"/><path d="m212 87 42-20 31 8 39-32 34 5" fill="none" stroke="#7862F4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="413" cy="67" r="22" fill="#E7ECFF"/><path d="M413 53v14l10 7" fill="none" stroke="#7862F4" stroke-width="4" stroke-linecap="round"/>
+                <path d="M331 224h168l-17-14H340z" fill="#304B8D"/><path d="M345 209h121l-8-12H353z" fill="#405F9F"/><path d="M365 196h82" stroke="#8CA5DC" stroke-width="4"/>
+                <path d="M452 216c-3-30-1-58 10-82 7-14 18-25 32-30 9 21 6 39-5 52-10 11-18 19-23 33" fill="#315E9A"/><path d="M462 181c-11-12-15-21-15-29 13 3 21 11 25 23m5-27c7-13 15-18 27-21-1 14-8 23-21 30" fill="#40B98D"/>
+                <path d="M354 91c-5-23 3-42 22-51 20-9 40 3 44 25l-1 26-14 26-35-1z" fill="#F1C3A5"/><path d="M350 72c1-26 15-44 36-47 22-3 39 9 43 29-12-6-22-8-33-6-8 12-22 19-46 24z" fill="#182D58"/><rect x="359" y="78" width="21" height="14" rx="7" fill="none" stroke="#24385E" stroke-width="2.5"/><rect x="389" y="78" width="21" height="14" rx="7" fill="none" stroke="#24385E" stroke-width="2.5"/><path d="M380 84h9m-26 9 4 1m34-1-4 1m-17 13q8 6 15-1" fill="none" stroke="#B66D6D" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M346 125c-17 8-28 28-29 62l-1 28h104l-4-58c-3-19-18-34-39-39z" fill="url(#lecturerJacket)"/><path d="m372 128 15 20 15-18 10 85h-57z" fill="#F7F8FF"/><path d="m372 128 15 20-10 14-14-29zm15 20 15-18 10 10-14 22z" fill="#536EB4"/><path d="m385 148 7 12-7 18-7-18z" fill="#7862F4"/>
+                <path d="M321 151c-14 1-24 8-34 20m32-16-20 26" fill="none" stroke="#F1C3A5" stroke-width="11" stroke-linecap="round"/><path d="m299 177-27-12 30-42" fill="none" stroke="#243F82" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="302" cy="122" r="4" fill="#7862F4"/>
+              </svg>
             </div>
+
+            <div class="dashboard-overview-grid lecturer-overview-grid">
+              <article class="dashboard-panel risk-overview-panel">
+                <div class="dashboard-panel-heading"><div><h3>Ringkasan Risiko Mahasiswa</h3><p>Distribusi sampel mahasiswa</p><p class="data-timestamp">Jendela Waktu: Hari 0 - 41 (Enam Minggu Pertama)</p></div></div>
+                <div class="risk-overview-content">
+                  <div class="risk-donut" id="riskDonut" role="img" aria-label="Distribusi tingkat risiko mahasiswa"><div class="risk-donut-center"><strong id="riskPercent">—</strong><span>Berisiko</span></div></div>
+                  <div class="risk-legend">
+                    <div><i class="risk-dot risk-dot-high"></i><span>Berisiko Tinggi</span><strong id="riskHighCount">—</strong></div>
+                    <div><i class="risk-dot risk-dot-mid"></i><span>Berisiko Sedang</span><strong id="riskMidCount">—</strong></div>
+                    <div><i class="risk-dot risk-dot-low"></i><span>Aman</span><strong id="riskLowCount">—</strong></div>
+                  </div>
+                </div>
+              </article>
+              <article class="dashboard-panel dashboard-notifications">
+                <div class="dashboard-panel-heading"><h3>Notifikasi</h3><button type="button" class="text-link" data-nav-target="siswa-berisiko">Lihat Semua →</button></div>
+                <div class="dashboard-notice-row"><span class="notice-icon notice-icon-alert">!</span><div><strong id="classSummarySentence">Memuat data kelas...</strong><button type="button" class="notice-link" data-nav-target="siswa-berisiko">Lihat Detail →</button></div></div>
+                <div class="dashboard-notice-row"><span class="notice-icon notice-icon-info">i</span><div><strong id="primaryModelInfo">Memeriksa status model...</strong><button type="button" class="notice-link" data-nav-target="metrik-model">Lihat Evaluasi Metrik →</button></div></div>
+              </article>
+            </div>
+
+            <article class="dashboard-panel lecturer-students-panel">
+              <div class="dashboard-panel-heading"><div><h3>Perlu Perhatian Sekarang</h3><p>Lima mahasiswa dengan risiko tertinggi yang memerlukan tindakan intervensi segera.</p></div><button type="button" class="btn btn-secondary btn-sm" data-nav-target="siswa-berisiko">Lihat Semua Siswa</button></div>
+              <div class="table-container" id="topRiskContainer"><p class="placeholder-text">Memuat data ringkasan risiko...</p></div>
+            </article>
           </div>
 
           <!-- Tampilan Ringkasan Mahasiswa -->
           <div id="ringkasanMhsWrapper" style="display: none;">
-            <div class="content-grid">
-              <div class="card card-span-2">
-                <div class="card-header">
-                  <h2 class="card-title">Langkah Pembelajaran Anda</h2>
-                </div>
-                <div class="card-body">
-                  <p class="lead-instruction">Selamat datang di Intelligent Tutor System (ITS) EWS.</p>
-                  <p class="card-desc">Pantau perkembangan belajar Anda, selesaikan quest mingguan untuk mendapatkan XP, dan lakukan simulasi prediksi risiko pembelajaran.</p>
-                  <div class="action-btn-row mt-16">
-                    <button type="button" class="btn btn-primary" data-nav-target="progres-saya">Buka Progres &amp; Gamifikasi</button>
-                    <button type="button" class="btn btn-secondary" data-nav-target="prediksi">Uji Prediksi Risiko</button>
-                  </div>
-                </div>
+            <div class="dashboard-hero dashboard-hero-student">
+              <div class="dashboard-hero-copy">
+                <span class="dashboard-eyebrow">EWS ITS · DASHBOARD MAHASISWA</span>
+                <h2>Pantau Performa<br>Akademik Anda</h2>
+                <p>Kenali risiko akademik lebih awal dan tingkatkan prestasi belajar.</p>
+                <div class="dashboard-hero-actions"><button type="button" class="btn btn-primary btn-sm" data-nav-target="progres-saya">Lihat Detail <span aria-hidden="true">→</span></button><button type="button" class="btn btn-hero-secondary btn-sm" data-nav-target="prediksi">Uji Prediksi</button></div>
               </div>
+              <svg class="dashboard-hero-art" viewBox="0 0 520 250" role="img" aria-label="Ilustrasi mahasiswa belajar dengan grafik performa akademik">
+                <defs><linearGradient id="studentScreen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#E8EDFF"/></linearGradient><linearGradient id="studentSweater" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7965E9"/><stop offset="1" stop-color="#4B4AA8"/></linearGradient></defs>
+                <circle cx="437" cy="49" r="46" fill="#DCE5FF" opacity=".8"/><circle cx="62" cy="198" r="36" fill="#D8E8FF" opacity=".72"/>
+                <rect x="280" y="24" width="191" height="108" rx="17" fill="url(#studentScreen)" stroke="#A9BCFF" stroke-width="4"/><path d="M299 111V91h21v20m12 0V72h21v39m12 0V56h21v55m12 0V42h21v69" fill="#B8C9FF" opacity=".72"/><path d="m302 84 30-17 24 8 38-31 28 6" fill="none" stroke="#7862F4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="440" cy="52" r="11" fill="#D8E2FF"/><path d="M436 52h8m-4-4v8" stroke="#7862F4" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M181 218h326" stroke="#304B8D" stroke-width="10" stroke-linecap="round"/><path d="M184 218v20m319-20v20" stroke="#304B8D" stroke-width="8" stroke-linecap="round"/><path d="M201 208h78l-13-8h-53z" fill="#4966A5"/><path d="M214 199h53v-8h-53z" fill="#8CA5DC"/><path d="M218 189h49v-8h-49z" fill="#DCE5FF"/>
+                <path d="M455 216c-4-29-2-56 9-78 7-14 17-24 31-29 9 20 6 37-5 49-9 11-18 19-22 32" fill="#315E9A"/><path d="M466 183c-11-11-15-20-15-28 13 3 20 10 24 22m5-26c7-12 15-18 27-20-1 14-8 23-21 29" fill="#40B98D"/>
+                <path d="M376 91c-5-24 3-43 22-52 20-10 41 3 45 26l-1 27-14 26-36-1z" fill="#F1C3A5"/><path d="M372 71c1-27 16-44 38-47 23-3 40 10 44 31-11-6-22-8-33-7-8 12-23 20-49 23z" fill="#192E59"/><path d="M380 94c4 3 8 3 11 0m19 0c4 3 8 3 11 0m-26 16q8 6 15-1" fill="none" stroke="#24385E" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M365 123c-20 8-32 27-34 59l-1 37h112l-5-57c-2-19-18-34-38-39z" fill="url(#studentSweater)"/><path d="m387 125 15 19 14-18 11 93h-53z" fill="#F4F5FF"/><path d="m387 125 15 19-10 13-13-26zm15 19 14-18 10 10-13 21z" fill="#7669D2"/>
+                <path d="M350 167c-17 2-29 10-40 23m40-17-24 28" fill="none" stroke="#F1C3A5" stroke-width="11" stroke-linecap="round"/><path d="M425 169c-14 7-23 16-29 30" fill="none" stroke="#F1C3A5" stroke-width="11" stroke-linecap="round"/><path d="M315 190 292 193m103 7 10-7" fill="none" stroke="#F1C3A5" stroke-width="9" stroke-linecap="round"/>
+                <path d="M240 196c-9-13-10-26-4-40 13 2 22 9 26 22m-23-8c-14-7-21-17-23-31 15 0 25 7 31 21" fill="#40B98D"/><path d="M238 209c-3-19-2-37 3-52" fill="none" stroke="#315E9A" stroke-width="4" stroke-linecap="round"/>
+                <path d="M255 155h112l20 51H237z" fill="#263A70"/><path d="m266 162 86 1 13 36h-91z" fill="#7690CF"/><circle cx="313" cy="181" r="4" fill="#D4DFFF"/><path d="M237 207h153l-10 8H248z" fill="#1C2E5E"/>
+              </svg>
+            </div>
+
+            <div class="dashboard-overview-grid student-overview-grid">
+              <article class="dashboard-panel student-progress-panel">
+                <div class="dashboard-panel-heading"><div><h3>Status Akademik</h3><p>Ringkasan progres pembelajaran</p></div><button type="button" class="text-link" data-nav-target="progres-saya">Lihat Semua →</button></div>
+                <div class="student-status-content"><div class="student-progress-ring" id="studentProgressRing"><div><strong id="studentProgressPercent">—</strong><span>Progres</span></div></div><div class="student-status-details"><p id="studentProgressCopy">Hubungkan identitas mahasiswa untuk melihat progres.</p><p class="student-status-risk" id="studentRiskCopy">Belum ada status risiko untuk ditampilkan.</p><button type="button" class="notice-link" data-nav-target="progres-saya">Buka Progres &amp; Gamifikasi →</button></div></div>
+              </article>
+              <article class="dashboard-panel dashboard-notifications student-notifications">
+                <div class="dashboard-panel-heading"><h3>Notifikasi</h3><button type="button" class="text-link" data-nav-target="riwayat">Lihat Semua →</button></div>
+                <div class="dashboard-notice-row"><span class="notice-icon notice-icon-info">i</span><div><strong id="studentModelNotice">Status model sedang diperiksa.</strong><button type="button" class="notice-link" data-nav-target="prediksi">Uji Prediksi Risiko →</button></div></div>
+                <div class="dashboard-notice-row"><span class="notice-icon notice-icon-success">✓</span><div><strong id="studentQuestNotice">Progres dan aktivitas belajar tersedia di halaman mahasiswa.</strong><button type="button" class="notice-link" data-nav-target="progres-saya">Lihat Progres →</button></div></div>
+              </article>
             </div>
           </div>
         </section>

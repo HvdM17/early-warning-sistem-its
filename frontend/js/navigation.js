@@ -69,6 +69,14 @@ export function initNavigation() {
 
   // Listener untuk link atau tombol dengan data-nav-target
   document.addEventListener('click', (e) => {
+    const clickedButton = e.target.closest('.btn-secondary');
+    if (clickedButton) {
+      document.querySelectorAll('.btn-secondary.button-clicked').forEach(button => {
+        button.classList.remove('button-clicked');
+      });
+      clickedButton.classList.add('button-clicked');
+    }
+
     const target = e.target.closest('[data-nav-target]');
     if (target) {
       e.preventDefault();
