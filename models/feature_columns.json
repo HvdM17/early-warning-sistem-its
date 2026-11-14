@@ -3,11 +3,10 @@
     "aktivitas_7h",
     "aktivitas_14h",
     "hari_sejak_aktif",
-    "rata_nilai_kuis",
+    "rata_nilai_tugas",
     "tren_nilai",
-    "jumlah_percobaan_kuis",
-    "rasio_kuis_selesai",
-    "rata_durasi_menit"
+    "jumlah_tugas_dikumpulkan",
+    "rasio_tugas_selesai"
   ],
   "primary_model": "knn",
   "threshold": 0.5,

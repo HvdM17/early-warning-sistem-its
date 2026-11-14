@@ -1,33 +1,68 @@
-﻿/**
- * EWS ITS frontend — API-connected screens
+/**
+ * State Management untuk EWS ITS
+ * Menyimpan status aplikasi dan menyinkronkan dengan EWS_CONFIG
  */
 
-// The backend can inject { role, studentId, apiBase } before this file.
-const runtimeConfig = window.EWS_CONFIG || {};
-const previewRole = new URLSearchParams(window.location.search).get('role');
-const configuredRole = runtimeConfig.role || previewRole;
-// shortcut: the backend has no authentication endpoint yet; replace this preview fallback when it supplies the signed-in role.
-const initialRole = configuredRole === 'mahasiswa' ? 'mahasiswa' : 'dosen';
+import { EWS_CONFIG } from './api.js';
 
-// State Management
-const appState = {
-  currentRole: initialRole,
-  currentScreen: 'ringkasan',
-  studentId: runtimeConfig.studentId || '',
+export const appState = {
+  role: 'dosen', // 'dosen' | 'mahasiswa'
+  activeSection: 'ringkasan',
+  studentId: null, // Identitas mahasiswa aktif
+  studentProgress: null,
   students: [],
-  studentFilter: 'all',
-  selectedStudent: null,
-  studentXP: 0,
-  completedQuestsCount: 0,
-  totalQuests: 5,
-  classStats: {
-    total: 0,
-    high: 0,
-    mid: 0,
-    low: 0
-  }
+  metrics: null,
+  modelStatus: null,
+  listeners: []
 };
 
+/**
+ * Mendaftarkan pendengar perubahan state
+ */
+export function subscribe(listener) {
+  appState.listeners.push(listener);
+  return () => {
+    appState.listeners = appState.listeners.filter(l => l !== listener);
+  };
+}
 
-export { appState, runtimeConfig };
+/**
+ * Memberitahu seluruh listener bahwa state telah berubah
+ */
+function notify(event, payload) {
+  appState.listeners.forEach(fn => fn(event, payload, appState));
+}
 
+/**
+ * Mengubah peran aktif (Dosen atau Mahasiswa)
+ */
+export function setRole(newRole) {
+  if (appState.role === newRole) return;
+  appState.role = newRole;
+  notify('role_changed', newRole);
+}
+
+/**
+ * Mengubah section/layar aktif
+ */
+export function setActiveSection(sectionId) {
+  appState.activeSection = sectionId;
+  notify('section_changed', sectionId);
+}
+
+/**
+ * Menghubungkan akun mahasiswa
+ */
+export function setStudentId(id) {
+  appState.studentId = id;
+  EWS_CONFIG.studentId = id;
+  notify('student_id_changed', id);
+}
+
+/**
+ * Memperbarui data progres mahasiswa
+ */
+export function setStudentProgress(progress) {
+  appState.studentProgress = progress;
+  notify('progress_updated', progress);
+}

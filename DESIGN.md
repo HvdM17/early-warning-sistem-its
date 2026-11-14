@@ -182,7 +182,7 @@ Timeline vertikal dengan titik di sebelah kiri, mengikuti pola Plume.
 
 - Tabel perbandingan KNN dan MLP dengan kolom accuracy, precision, recall, F1, ROC-AUC. Nilai terbaik per kolom ditandai dengan teks "terbaik", bukan hanya warna.
 - Confusion matrix sebagai tabel sederhana, bukan grafik dekoratif.
-- Catatan keterbatasan dalam kotak teks: "Model dilatih pada data sintetis. Hasil ini tidak menggambarkan performa pada data Moodle nyata."
+- Catatan keterbatasan dalam kotak teks: "Model dilatih pada data OULAD (universitas jarak jauh di Inggris). Hasil ini belum divalidasi pada mahasiswa Indonesia."
 
 ## 6. Komponen Dasar
 
