@@ -62,34 +62,3 @@ Jalankan test suite menggunakan pytest:
 1. **Lapis 1 (Frontend UI)**: HTML5, CSS kustom (tanpa framework/library pihak ketiga), Vanilla JavaScript Fetch API (`frontend/index.html`, `frontend/css/style.css`, `frontend/js/app.js`).
 2. **Lapis 2 (Backend REST API)**: FastAPI (`backend/main.py`), validasi Pydantic (`backend/schemas.py`), gamifikasi & rekomendasi intervensi (`backend/gamification.py`), penyimpanan file JSON atomik (`backend/storage.py`).
 3. **Lapis 3 (Model & Algoritma ML)**: Model KNN & MLP (`models/knn_model.joblib`, `models/mlp_model.joblib`), metadata fitur (`models/feature_columns.json`), metrik performa (`models/metrics.json`).
-
-## 6. Clone dan pembagian branch
-
-Repository:
-
-```text
-https://github.com/HvdM17/early-warning-sistem-its.git
-```
-
-Clone project:
-
-```bash
-git clone https://github.com/HvdM17/early-warning-sistem-its.git
-cd early-warning-sistem-its
-```
-
-Untuk anggota bagian backend, gunakan branch `main` karena branch backend sudah ditutup:
-
-```bash
-git checkout main
-git pull origin main
-```
-
-Untuk anggota bagian frontend, gunakan branch `frontend`:
-
-```bash
-git checkout frontend
-git pull origin frontend
-```
-
-Folder backend berada di `backend/`, sedangkan folder frontend berada di `frontend/`. Jangan mengubah branch atau bagian lain tanpa koordinasi kelompok.
