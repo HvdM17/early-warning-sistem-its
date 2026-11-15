@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.staticfiles import StaticFiles
 
 from .gamification import (
@@ -19,6 +19,8 @@ from .schemas import (
     ActivityRequest,
     ActivityResponse,
     HealthResponse,
+    LoginRequest,
+    LoginResponse,
     PredictRequest,
     PredictResponse,
     ProgressResponse,
@@ -27,6 +29,8 @@ from .schemas import (
 )
 from .storage import read_progress, write_progress
 
+from .auth import login_user, logout_user, get_current_user
+
 app = FastAPI(title="EWS ITS")
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -34,6 +38,22 @@ ROOT = Path(__file__).resolve().parents[1]
 def health():
     return model_status()
 
+@app.post("/api/auth/login", response_model=LoginResponse)
+def api_login(request: LoginRequest):
+    return login_user(request.identifier, request.password)
+
+
+@app.post("/api/auth/logout")
+def api_logout(
+    x_auth_token: str = Header(default="", alias="X-Auth-Token")
+):
+    logout_user(x_auth_token)
+    return {"message": "Logout berhasil"}
+
+
+@app.get("/api/auth/me")
+def api_me(user: dict = Depends(get_current_user)):
+    return {"username": user["username"], "nama": user["nama"], "role": user["role"]}
 
 @app.post("/api/predict", response_model=PredictResponse)
 def api_predict(request: PredictRequest):
