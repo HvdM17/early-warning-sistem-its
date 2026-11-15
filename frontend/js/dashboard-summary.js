@@ -196,7 +196,7 @@ export function renderStudentRingkasanStatus() {
   if (riskCopy) {
     const student = studentId && appState.students.find(s => s.student_id === studentId);
     riskCopy.textContent = student
-      ? `Status risiko terkini: ${student.risk_level.toUpperCase()} (Probabilitas: ${Math.round(student.probability * 100)}%).`
+      ? `Status risiko terkini: ${student.risk_level.toUpperCase()} (Skor model: ${Math.round(student.probability * 100)}%).`
       : studentId
         ? 'Belum ada catatan prediksi risiko untuk identitas mahasiswa ini.'
         : 'Hubungkan identitas mahasiswa Anda untuk melihat estimasi risiko.';

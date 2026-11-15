@@ -27,6 +27,7 @@ def default_progress() -> dict:
         "quiz_scores": [],
         "remedial_items": [],
         "active_days": [],
+        "history": [],
     }
 
 
@@ -123,7 +124,7 @@ def intervention_for_features(values: dict) -> tuple[list[str], Intervention]:
 
     if not quest_ids:
         quest = [QuestItem(id=key, title=title) for key, title in DEFAULT_QUEST]
-        message = "Pertahankan aktivitas belajar dan selesaikan modul mingguan."
+        message = "Tidak ada indikator tunggal yang menonjol. Pertahankan aktivitas belajar dan selesaikan modul mingguan."
     else:
         unique_ids = list(dict.fromkeys(quest_ids))
         quest = [QuestItem(id=key, title=INTERVENTION_QUESTS[key]) for key in unique_ids]

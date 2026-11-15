@@ -5,7 +5,7 @@
 
 import { apiPredict } from './api.js';
 import { escapeHtml, showToast } from './ui.js';
-import { setStudentId, appState } from './state.js';
+import { setStudentId, appState, subscribe } from './state.js';
 
 export function initPrediction() {
   const form = document.getElementById('predictionForm');
@@ -19,6 +19,21 @@ export function initPrediction() {
   if (inputStudentId && appState.studentId) {
     inputStudentId.value = appState.studentId;
   }
+
+  // Form dan hasil prediksi hanya berlaku untuk role/akun aktif.
+  subscribe((event) => {
+    if (['role_changed', 'user_changed', 'auth_cleared'].includes(event)) {
+      if (event === 'role_changed' && appState.authMode === 'demo') {
+        setStudentId(null);
+      }
+      form.reset();
+      clearAllErrors();
+      renderEmptyPredictionState(resultContainer);
+      if (inputStudentId && appState.authMode === 'authenticated' && appState.studentId) {
+        inputStudentId.value = appState.studentId;
+      }
+    }
+  });
 
   // Event listener submit form prediksi
   form.addEventListener('submit', async (e) => {
@@ -167,6 +182,7 @@ function renderPredictionResult(container, data) {
   const primaryProbPct = Math.round(pred.probability * 100);
   const knnProb = pred.per_model?.knn !== undefined ? Math.round(pred.per_model.knn * 100) : 0;
   const mlpProb = pred.per_model?.mlp !== undefined ? Math.round(pred.per_model.mlp * 100) : 0;
+  const knnRiskyNeighbors = Math.round((pred.per_model?.knn || 0) * 3);
 
   const riskBadgeClass = `badge-risk-${pred.risk_level}`;
   const statusCardClass = `status-card-${pred.risk_level}`;
@@ -191,18 +207,20 @@ function renderPredictionResult(container, data) {
     <div class="result-card-inner animated-fade-in">
       <div class="result-header ${statusCardClass}">
         <div class="result-badge-row">
-          <span class="badge ${riskBadgeClass}">Tingkat Risiko: ${pred.risk_level.toUpperCase()}</span>
+          <div class="result-badge-group">
+            <span class="badge ${riskBadgeClass}">Status: ${pred.label === 'berisiko' ? 'Berisiko' : 'Tidak Berisiko'}</span>
+          </div>
           <span class="result-student-tag">ID: ${escapeHtml(data.student_id || 'Anonim')}</span>
         </div>
-        <h3 class="result-headline">Kemungkinan Risiko Gagal/Withdraw: ${primaryProbPct}%</h3>
+        <h3 class="result-headline">Tingkat Risiko: ${pred.risk_level.toUpperCase()}</h3>
         <p class="result-subline">
-          Status Klasifikasi: <strong>${pred.label === 'berisiko' ? 'Berisiko' : 'Tidak Berisiko'}</strong>
-          · Model Utama: <strong>${escapeHtml(pred.primary_model.toUpperCase())}</strong>
+          Skor Risiko Model: <strong>${primaryProbPct}%</strong>
         </p>
+        <p class="result-score-note">Dasar KNN: ${knnRiskyNeighbors} dari 3 data terdekat masuk kelompok berisiko.</p>
       </div>
 
       <div class="result-section">
-        <h4 class="result-section-title">Perbandingan Probabilitas Model</h4>
+        <h4 class="result-section-title">Perbandingan Skor Model</h4>
         <div class="model-meter-grid">
           <div class="meter-item">
             <div class="meter-header">
@@ -226,7 +244,7 @@ function renderPredictionResult(container, data) {
       </div>
 
       <div class="result-section">
-        <h4 class="result-section-title">Faktor Penyebab Utama (Penjelasan)</h4>
+        <h4 class="result-section-title">Indikator yang Terlihat</h4>
         <ul class="result-explanation-list">
           ${explanationsHtml}
         </ul>
@@ -238,7 +256,7 @@ function renderPredictionResult(container, data) {
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
           </div>
           <div>
-            <h4 class="intervention-headline">Rekomendasi Intervensi ITS</h4>
+            <h4 class="intervention-headline">Saran Tindak Lanjut</h4>
             <p class="intervention-text">${escapeHtml(data.intervention?.message || '')}</p>
           </div>
         </div>

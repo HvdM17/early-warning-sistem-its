@@ -25,7 +25,31 @@ Akses aplikasi pada peramban web:
 - **Dokumentasi Interaktif Swagger API**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - **Health Check Endpoint**: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
 
-## 3. Menjalankan Pengujian (Testing)
+## 3. Akun Demo Lokal
+
+Prototipe ini menyediakan dua mode:
+
+- **Mode Demo**: tanpa token, untuk presentasi lokal; role Dosen/Mahasiswa dapat dipilih dari header.
+- **Mode Login**: memakai token session; role dan `student_id` mengikuti akun dan tidak dapat diganti dari header.
+
+Mode demo bukan autentikasi dan hanya ditujukan untuk server lokal. Session login bersifat in-memory dan kedaluwarsa setelah 1 jam; session otomatis dibersihkan saat server restart. Token yang tidak valid ditolak dengan HTTP 401.
+
+Akun demo yang tersedia:
+
+```text
+Dosen:
+- username/email: dosen1@its.ac.id
+- password: dosen123
+
+Mahasiswa:
+- username/email: mahasiswa1@its.ac.id
+- password: mahasiswa123
+- student_id: S-001
+```
+
+Password disimpan sebagai hash Argon2 untuk prototype lokal. Kredensial demo tidak ditampilkan di halaman utama.
+
+## 4. Menjalankan Pengujian (Testing)
 
 Jalankan test suite menggunakan pytest:
 
@@ -33,13 +57,13 @@ Jalankan test suite menggunakan pytest:
 .\.venv\Scripts\python.exe -m pytest -v
 ```
 
-## 4. Struktur Arsitektur Tiga Lapis
+## 5. Struktur Arsitektur Tiga Lapis
 
 1. **Lapis 1 (Frontend UI)**: HTML5, CSS kustom (tanpa framework/library pihak ketiga), Vanilla JavaScript Fetch API (`frontend/index.html`, `frontend/css/style.css`, `frontend/js/app.js`).
 2. **Lapis 2 (Backend REST API)**: FastAPI (`backend/main.py`), validasi Pydantic (`backend/schemas.py`), gamifikasi & rekomendasi intervensi (`backend/gamification.py`), penyimpanan file JSON atomik (`backend/storage.py`).
 3. **Lapis 3 (Model & Algoritma ML)**: Model KNN & MLP (`models/knn_model.joblib`, `models/mlp_model.joblib`), metadata fitur (`models/feature_columns.json`), metrik performa (`models/metrics.json`).
 
-## 5. Clone dan pembagian branch
+## 6. Clone dan pembagian branch
 
 Repository:
 

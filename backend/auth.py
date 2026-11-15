@@ -1,37 +1,59 @@
 
 import secrets
+from datetime import datetime, timedelta, timezone
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from fastapi import Header, HTTPException
 
 from .schemas import LoginResponse
 
 
-# Akun pengguna
+TOKEN_TTL_SECONDS = 60 * 60
+_hasher = PasswordHasher()
+
+
+# Akun pengguna demo lokal, bukan autentikasi produksi.
 USERS = {
     "dosen1": {
-        "email": "dosen1@its.ac.id",
-        "password": "dosen123",
+        "email": "dosen1@its",
+        "password_hash": _hasher.hash("password"),
         "role": "dosen",
-        "nama": "Dosen Pengampu"
+        "nama": "Dosen Pengampu",
+        "student_id": None,
     },
-    "siswa1": {
-        "email": "siswa1@its.ac.id",
-        "password": "siswa123",
-        "role": "siswa",
-        "nama": "Siswa Satu"
+    "mahasiswa1": {
+        "email": "mahasiswa1@its",
+        "password_hash": _hasher.hash("password"),
+        "role": "mahasiswa",
+        "nama": "Mahasiswa Satu",
+        "student_id": "S-001",
     },
-    "siswa2": {
-        "email": "siswa2@its.ac.id",
-        "password": "siswa456",
-        "role": "siswa",
-        "nama": "Siswa Dua"
+    "mahasiswa2": {
+        "email": "mahasiswa2@its",
+        "password_hash": _hasher.hash("password"),
+        "role": "mahasiswa",
+        "nama": "Mahasiswa Dua",
+        "student_id": "S-002",
     },
 }
 
 
-# Penyimpanan session sementara
-# Token akan hilang jika server restart.
-SESSIONS: dict[str, str] = {}
+# Penyimpanan session sementara di memory server.
+# Token akan hilang jika server restart; expiry dibatasi untuk prototype lokal.
+SESSIONS: dict[str, dict[str, str | float]] = {}
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def cleanup_expired_sessions() -> None:
+    now = _now().timestamp()
+    for token, session in list(SESSIONS.items()):
+        expires_at = float(session.get("expires_at", 0))
+        if expires_at <= now:
+            SESSIONS.pop(token, None)
 
 
 def _extract_token(value: str) -> str:
@@ -46,6 +68,17 @@ def _extract_token(value: str) -> str:
         return value[7:].strip()
 
     return value
+
+
+def _verify_password(user: dict, password: str) -> bool:
+    password_hash = user.get("password_hash")
+    if not password_hash:
+        return False
+    try:
+        _hasher.verify(password_hash, password)
+        return True
+    except VerifyMismatchError:
+        return False
 
 
 def find_user(identifier: str) -> tuple[str | None, dict | None]:
@@ -63,24 +96,25 @@ def find_user(identifier: str) -> tuple[str | None, dict | None]:
 def login_user(identifier: str, password: str) -> LoginResponse:
     """Memeriksa akun dan membuat token login."""
 
+    cleanup_expired_sessions()
     username, user = find_user(identifier)
 
-    if user is None or not secrets.compare_digest(
-        user["password"], password
-    ):
+    if user is None or not _verify_password(user, password):
         raise HTTPException(
             status_code=401,
-            detail="Username/email atau password salah"
+            detail="Username/email atau password salah",
         )
 
     token = secrets.token_urlsafe(32)
-    SESSIONS[token] = username
+    expires_at = (_now() + timedelta(seconds=TOKEN_TTL_SECONDS)).timestamp()
+    SESSIONS[token] = {"username": username, "expires_at": expires_at}
 
     return LoginResponse(
         token=token,
         username=username,
         nama=user["nama"],
-        role=user["role"]
+        role=user["role"],
+        student_id=user.get("student_id"),
     )
 
 
@@ -91,25 +125,50 @@ def logout_user(token_value: str) -> None:
     SESSIONS.pop(token, None)
 
 
-def get_current_user(
+def get_optional_current_user(
     x_auth_token: str = Header(default="", alias="X-Auth-Token")
-) -> dict:
-    """Memeriksa token dan mengambil data pengguna."""
+) -> dict | None:
+    """Mengambil user aktif; tanpa token berarti mode demo, token invalid ditolak."""
 
+    cleanup_expired_sessions()
     token = _extract_token(x_auth_token)
-    username = SESSIONS.get(token)
+    if not token:
+        return None
 
-    if username is None:
+    session = SESSIONS.get(token)
+    if session is None:
         raise HTTPException(
             status_code=401,
-            detail="Belum login atau token tidak valid"
+            detail="Belum login atau token tidak valid",
         )
 
-    user = USERS[username]
+    username = str(session["username"])
+    user = USERS.get(username)
+    if user is None:
+        SESSIONS.pop(token, None)
+        raise HTTPException(
+            status_code=401,
+            detail="Belum login atau token tidak valid",
+        )
 
     return {
         "username": username,
         "nama": user["nama"],
         "email": user["email"],
-        "role": user["role"]
+        "role": user["role"],
+        "student_id": user.get("student_id"),
     }
+
+
+def get_current_user(
+    x_auth_token: str = Header(default="", alias="X-Auth-Token")
+) -> dict:
+    """Memeriksa token dan mengambil data pengguna."""
+
+    user = get_optional_current_user(x_auth_token)
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Belum login atau token tidak valid",
+        )
+    return user

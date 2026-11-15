@@ -3,7 +3,18 @@
  * Mengatur pergantian peran (Dosen/Mahasiswa), navigasi antar section, dan parameter URL (?role=mahasiswa)
  */
 
-import { appState, setRole, setActiveSection, setStudentId, subscribe } from './state.js';
+import { apiGetMe, apiLogin, apiLogout } from './api.js';
+import {
+  appState,
+  clearAuth,
+  setActiveSection,
+  setAuthMode,
+  setAuthToken,
+  setRole,
+  setStudentId,
+  setUser,
+  subscribe,
+} from './state.js';
 
 const SECTION_TITLES = {
   'ringkasan': 'Ringkasan Dashboard',
@@ -23,9 +34,7 @@ export function initNavigation() {
   const btnRoleDosen = document.getElementById('btnRoleDosen');
   const btnRoleMhs = document.getElementById('btnRoleMhs');
   const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
-  const pageTitle = document.getElementById('pageTitle');
 
-  // Baca parameter URL saat pertama kali dimuat
   const urlParams = new URLSearchParams(window.location.search);
   const initialRole = urlParams.get('role');
   const initialStudentId = urlParams.get('student_id') || urlParams.get('studentId');
@@ -47,9 +56,11 @@ export function initNavigation() {
     setActiveSection('ringkasan');
   }
 
-  // Event listener tombol peran
   if (btnRoleDosen) {
     btnRoleDosen.addEventListener('click', () => {
+      if (appState.authMode === 'authenticated') {
+        return;
+      }
       setRole('dosen');
       updateUrlParam('role', 'dosen');
     });
@@ -57,12 +68,14 @@ export function initNavigation() {
 
   if (btnRoleMhs) {
     btnRoleMhs.addEventListener('click', () => {
+      if (appState.authMode === 'authenticated') {
+        return;
+      }
       setRole('mahasiswa');
       updateUrlParam('role', 'mahasiswa');
     });
   }
 
-  // Event listener menu sidebar
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       const section = item.dataset.section;
@@ -72,7 +85,6 @@ export function initNavigation() {
     });
   });
 
-  // Listener untuk link atau tombol dengan data-nav-target
   document.addEventListener('click', (e) => {
     const clickedButton = e.target.closest('.btn-secondary');
     if (clickedButton) {
@@ -92,18 +104,205 @@ export function initNavigation() {
     }
   });
 
-  // Subscribe ke perubahan state
-  subscribe((event, payload, state) => {
+  subscribe((event, payload) => {
     if (event === 'role_changed') {
       applyRoleUI(payload);
     } else if (event === 'section_changed') {
       applySectionUI(payload);
+    } else if (event === 'auth_mode_changed' || event === 'user_changed' || event === 'auth_cleared') {
+      updateAuthPanel();
+      applyRoleUI(appState.role);
     }
   });
 
-  // Terapkan UI awal
+  window.addEventListener('ews-auth-expired', () => {
+    clearAuth();
+    applyRoleUI(appState.role);
+    updateAuthPanel();
+    showPublicView('login');
+  });
+
+  initAuthControls();
+  const storedToken = window.sessionStorage.getItem('ews_auth_token');
+  if (storedToken) {
+    setAuthToken(storedToken);
+    restoreSession();
+  } else {
+    setAuthMode('demo');
+    updateAuthPanel();
+    showPublicView('landing');
+  }
+
   applyRoleUI(appState.role);
   applySectionUI(appState.activeSection);
+}
+
+function initAuthControls() {
+  const loginButton = document.getElementById('btnOpenLogin');
+  const logoutButton = document.getElementById('btnLogout');
+  const modal = document.getElementById('loginModal');
+  const closeButton = document.getElementById('loginModalClose');
+  const form = document.getElementById('loginForm');
+  const identifierInput = document.getElementById('loginIdentifier');
+  const publicLoginForm = document.getElementById('publicLoginForm');
+  const publicIdentifierInput = document.getElementById('publicLoginIdentifier');
+
+  document.querySelectorAll('[data-open-login]').forEach(button => {
+    button.addEventListener('click', () => showPublicView('login'));
+  });
+  document.querySelectorAll('[data-show-landing]').forEach(button => {
+    button.addEventListener('click', () => showPublicView('landing'));
+  });
+
+  const closeModal = () => {
+    modal.hidden = true;
+    loginButton?.focus();
+  };
+
+  loginButton?.addEventListener('click', () => {
+    modal.hidden = false;
+    identifierInput?.focus();
+  });
+
+  closeButton?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (event) => {
+    if (event.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal && !modal.hidden) closeModal();
+  });
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const identifier = document.getElementById('loginIdentifier').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const submitButton = document.getElementById('loginSubmit');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Memproses...';
+
+    try {
+      const response = await apiLogin({ identifier, password });
+      const token = response.token;
+      setAuthToken(token);
+      setAuthMode('authenticated');
+      setUser({
+        username: response.username,
+        nama: response.nama,
+        role: response.role,
+        student_id: response.student_id || null,
+      });
+      if (response.role) {
+        setRole(response.role);
+      }
+      if (response.student_id) {
+        setStudentId(response.student_id);
+      }
+      closeModal();
+      form.reset();
+      updateAuthPanel();
+    } catch (error) {
+      const errorNode = document.getElementById('loginError');
+      errorNode.textContent = error.message || 'Login gagal.';
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Masuk';
+    }
+  });
+
+  publicLoginForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const identifier = publicIdentifierInput.value.trim();
+    const password = document.getElementById('publicLoginPassword').value;
+    const submitButton = document.getElementById('publicLoginSubmit');
+    const errorNode = document.getElementById('publicLoginError');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Memproses...';
+    errorNode.textContent = '';
+
+    try {
+      const response = await apiLogin({ identifier, password });
+      applyAuthenticatedUser(response);
+      publicLoginForm.reset();
+      showPublicView('app');
+    } catch (error) {
+      errorNode.textContent = error.message || 'Login gagal. Periksa kembali data login.';
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Masuk';
+    }
+  });
+
+  logoutButton?.addEventListener('click', async () => {
+    try {
+      await apiLogout();
+    } catch (error) {
+      // abaikan karena token bisa sudah kedaluwarsa
+    }
+    clearAuth();
+    updateAuthPanel();
+    showPublicView('landing');
+  });
+}
+
+function applyAuthenticatedUser(response) {
+  setAuthToken(response.token);
+  setAuthMode('authenticated');
+  setUser({
+    username: response.username,
+    nama: response.nama,
+    role: response.role,
+    student_id: response.student_id || null,
+  });
+  setRole(response.role || 'dosen');
+  setStudentId(response.student_id || null);
+  updateAuthPanel();
+}
+
+async function restoreSession() {
+  try {
+    const me = await apiGetMe();
+    setAuthMode('authenticated');
+    setUser(me);
+    setRole(me.role || 'dosen');
+    setStudentId(me.student_id || null);
+    showPublicView('app');
+  } catch (error) {
+    clearAuth();
+    showPublicView('login');
+  }
+  updateAuthPanel();
+}
+
+function updateAuthPanel() {
+  const loginButton = document.getElementById('btnOpenLogin');
+  const logoutButton = document.getElementById('btnLogout');
+  const authStatus = document.getElementById('authStatusLabel');
+
+  if (appState.authMode === 'authenticated' && appState.user) {
+    loginButton.hidden = true;
+    logoutButton.hidden = false;
+    authStatus.textContent = `${appState.user.nama} • ${appState.user.role}`;
+    return;
+  }
+
+  loginButton.hidden = false;
+  logoutButton.hidden = true;
+  authStatus.textContent = 'Mode Demo';
+}
+
+function showPublicView(view) {
+  const landing = document.getElementById('landingView');
+  const login = document.getElementById('loginView');
+  const app = document.getElementById('appView');
+  if (!landing || !login || !app) return;
+
+  landing.hidden = view !== 'landing';
+  login.hidden = view !== 'login';
+  app.hidden = view !== 'app';
+
+  if (view === 'login') {
+    document.getElementById('publicLoginIdentifier')?.focus();
+  }
 }
 
 export function navigateToSection(sectionId) {
@@ -124,7 +323,6 @@ function applyRoleUI(role) {
     dosenNavItems.forEach(el => (el.style.display = 'none'));
     mhsNavItems.forEach(el => (el.style.display = 'flex'));
 
-    // Jika section aktif sekarang khusus dosen, alihkan ke ringkasan
     if (['siswa-berisiko', 'metrik-model'].includes(appState.activeSection)) {
       navigateToSection('ringkasan');
     }
@@ -135,10 +333,20 @@ function applyRoleUI(role) {
     dosenNavItems.forEach(el => (el.style.display = 'flex'));
     mhsNavItems.forEach(el => (el.style.display = 'none'));
 
-    // Jika section aktif sekarang khusus mhs, alihkan ke ringkasan
     if (['progres-saya', 'riwayat'].includes(appState.activeSection)) {
       navigateToSection('ringkasan');
     }
+  }
+
+  btnRoleDosen?.setAttribute('aria-pressed', String(role === 'dosen'));
+  btnRoleMhs?.setAttribute('aria-pressed', String(role === 'mahasiswa'));
+
+  if (appState.authMode === 'authenticated' && appState.user && appState.user.role) {
+    if (btnRoleDosen) btnRoleDosen.disabled = appState.user.role !== 'dosen';
+    if (btnRoleMhs) btnRoleMhs.disabled = appState.user.role !== 'mahasiswa';
+  } else {
+    if (btnRoleDosen) btnRoleDosen.disabled = false;
+    if (btnRoleMhs) btnRoleMhs.disabled = false;
   }
 }
 
@@ -147,7 +355,6 @@ function applySectionUI(sectionId) {
   const pageTitle = document.getElementById('pageTitle');
   const sections = document.querySelectorAll('.app-section');
 
-  // Update aktif pada nav
   navItems.forEach(item => {
     if (item.dataset.section === sectionId) {
       item.classList.add('active');
@@ -156,12 +363,10 @@ function applySectionUI(sectionId) {
     }
   });
 
-  // Update judul halaman
   if (pageTitle && SECTION_TITLES[sectionId]) {
     pageTitle.textContent = SECTION_TITLES[sectionId];
   }
 
-  // Tampilkan section yang dipilih dan sembunyikan yang lain
   sections.forEach(sec => {
     if (sec.id === sectionId) {
       sec.style.display = 'block';
@@ -170,7 +375,6 @@ function applySectionUI(sectionId) {
     }
   });
 
-  // Scroll konten utama ke atas saat ganti section
   const main = document.querySelector('.app-content');
   if (main) main.scrollTop = 0;
 }

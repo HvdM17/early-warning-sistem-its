@@ -13,6 +13,8 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def isolated_progress(tmp_path, monkeypatch):
     monkeypatch.setattr(storage, "PROGRESS_PATH", tmp_path / "progress.json")
+    import backend.auth as auth_module
+    auth_module.SESSIONS.clear()
 
 
 def valid_payload(**overrides):
@@ -181,3 +183,87 @@ def test_tc19_risk_drop_awards_back_on_track_badge(monkeypatch):
     progress = client.get("/api/progress/S-RISK")
     assert progress.status_code == 200
     assert "Kembali ke Jalur" in progress.json()["badges"]
+
+
+def test_tc20_login_and_me_return_student_identity():
+    response = client.post("/api/auth/login", json={"identifier": "mahasiswa1@its.ac.id", "password": "mahasiswa123"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["role"] == "mahasiswa"
+    assert body["student_id"] == "S-001"
+
+    me = client.get("/api/auth/me", headers={"X-Auth-Token": body["token"]})
+    assert me.status_code == 200
+    assert me.json()["student_id"] == "S-001"
+
+
+def test_tc21_expired_token_is_rejected():
+    import backend.auth as auth_module
+    auth_module.SESSIONS["expired-token"] = {"username": "mahasiswa1", "expires_at": 0}
+
+    response = client.get("/api/auth/me", headers={"X-Auth-Token": "expired-token"})
+    assert response.status_code == 401
+
+
+def test_tc22_mahasiswa_cannot_read_other_student_history():
+    login = client.post("/api/auth/login", json={"identifier": "mahasiswa1@its.ac.id", "password": "mahasiswa123"}).json()
+    headers = {"X-Auth-Token": login["token"]}
+
+    response = client.get("/api/history/S-002", headers=headers)
+    assert response.status_code == 403
+
+
+def test_tc23_activity_auto_records_history_for_own_student():
+    login = client.post("/api/auth/login", json={"identifier": "mahasiswa1@its.ac.id", "password": "mahasiswa123"}).json()
+    headers = {"X-Auth-Token": login["token"]}
+
+    response = client.post(
+        "/api/activity",
+        json={"student_id": "S-001", "type": "kuis", "score": 88, "item_id": "M2"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+
+    history = client.get("/api/history/S-001", headers=headers)
+    assert history.status_code == 200
+    assert history.json()["history"][0]["type"] == "kuis"
+
+
+def test_tc24_logout_removes_token():
+    login = client.post("/api/auth/login", json={"identifier": "dosen1@its.ac.id", "password": "dosen123"}).json()
+    headers = {"X-Auth-Token": login["token"]}
+
+    logout = client.post("/api/auth/logout", headers=headers)
+    assert logout.status_code == 200
+
+    me = client.get("/api/auth/me", headers=headers)
+    assert me.status_code == 401
+
+
+def test_tc25_dosen_prediction_does_not_update_student_progress(monkeypatch):
+    login = client.post("/api/auth/login", json={"identifier": "dosen1@its.ac.id", "password": "dosen123"}).json()
+    headers = {"X-Auth-Token": login["token"]}
+    result = PredictResponse(
+        student_id="S-001",
+        prediction=PredictionResult(
+            label="berisiko",
+            risk_level="tinggi",
+            probability=0.8,
+            per_model={"knn": 0.8, "mlp": 0.8},
+            primary_model="knn",
+        ),
+        explanation=[],
+        intervention=Intervention(message="Perlu pendampingan.", quest=[]),
+    )
+    monkeypatch.setattr("backend.main.is_model_loaded", lambda: True)
+    monkeypatch.setattr("backend.main.predict", lambda request: result)
+
+    response = client.post("/api/predict", json=valid_payload(), headers=headers)
+
+    assert response.status_code == 200
+    assert storage.read_progress("S-001") is None
+
+
+def test_tc26_invalid_token_is_rejected_instead_of_becoming_demo():
+    response = client.get("/api/history/S-001", headers={"X-Auth-Token": "not-a-real-token"})
+    assert response.status_code == 401

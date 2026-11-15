@@ -102,4 +102,5 @@ class LoginResponse(BaseModel):
     token: str
     username: str
     nama: str
-    role: Literal["dosen", "siswa"]
+    role: Literal["dosen", "mahasiswa"]
+    student_id: str | None = None

@@ -4,22 +4,44 @@
  */
 
 export const EWS_CONFIG = {
-  apiBaseUrl: '', // Host relatif (misal http://127.0.0.1:8000)
-  studentId: null, // Identitas mahasiswa aktif (null jika akun belum terhubung)
+  apiBaseUrl: '',
+  studentId: null,
+  token: null,
   timeoutMs: 10000
 };
 
-/**
- * Helper pembungkus fetch dengan penanganan error dan parsing JSON
- */
+function getStoredToken() {
+  try {
+    return sessionStorage.getItem('ews_auth_token');
+  } catch (error) {
+    return null;
+  }
+}
+
+export function clearStoredToken() {
+  try {
+    sessionStorage.removeItem('ews_auth_token');
+  } catch (error) {
+    // no-op in sandboxed or restricted contexts
+  }
+  EWS_CONFIG.token = null;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('ews-auth-expired'));
+  }
+}
+
 async function request(endpoint, options = {}) {
   const url = `${EWS_CONFIG.apiBaseUrl}${endpoint}`;
+  const token = EWS_CONFIG.token || getStoredToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'X-Auth-Token': token } : {}),
+    ...options.headers
+  };
+
   const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers
-    },
-    ...options
+    ...options,
+    headers
   };
 
   try {
@@ -27,6 +49,9 @@ async function request(endpoint, options = {}) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
+      if (response.status === 401) {
+        clearStoredToken();
+      }
       const errorMsg = data?.detail || `Permintaan gagal dengan status ${response.status}`;
       const error = new Error(errorMsg);
       error.status = response.status;
@@ -45,17 +70,27 @@ async function request(endpoint, options = {}) {
   }
 }
 
-/**
- * Health check status model ML
- */
+export async function apiLogin(payload) {
+  return request('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+
+export async function apiLogout() {
+  return request('/api/auth/logout', {
+    method: 'POST'
+  });
+}
+
+export async function apiGetMe() {
+  return request('/api/auth/me');
+}
+
 export async function apiGetHealth() {
   return request('/health');
 }
 
-/**
- * Prediksi risiko mahasiswa (KNN & MLP)
- * @param {Object} payload Sesuai skema PredictRequest
- */
 export async function apiPredict(payload) {
   return request('/api/predict', {
     method: 'POST',
@@ -63,10 +98,6 @@ export async function apiPredict(payload) {
   });
 }
 
-/**
- * Mengambil progres dan gamifikasi mahasiswa
- * @param {string} studentId
- */
 export async function apiGetProgress(studentId) {
   if (!studentId) {
     throw new Error('studentId wajib disertakan untuk mengambil progres.');
@@ -74,10 +105,13 @@ export async function apiGetProgress(studentId) {
   return request(`/api/progress/${encodeURIComponent(studentId)}`);
 }
 
-/**
- * Mencatat aktivitas belajar mahasiswa (kuis, bacaan, remedial)
- * @param {Object} payload { student_id, type, score, item_id }
- */
+export async function apiGetHistory(studentId) {
+  if (!studentId) {
+    throw new Error('studentId wajib disertakan untuk mengambil riwayat.');
+  }
+  return request(`/api/history/${encodeURIComponent(studentId)}`);
+}
+
 export async function apiSendActivity(payload) {
   return request('/api/activity', {
     method: 'POST',
@@ -85,16 +119,10 @@ export async function apiSendActivity(payload) {
   });
 }
 
-/**
- * Mengambil 50 sampel data siswa berisiko dari dataset OULAD
- */
 export async function apiGetStudents() {
   return request('/api/students');
 }
 
-/**
- * Mengambil metrik evaluasi model (Accuracy, Recall, ROC-AUC, CM)
- */
 export async function apiGetMetrics() {
   return request('/api/metrics');
 }

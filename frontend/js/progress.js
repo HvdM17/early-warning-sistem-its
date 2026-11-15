@@ -3,7 +3,7 @@
  * Mengelola #progres-saya, gamifikasi (XP, level, badge, quest), dan #riwayat
  */
 
-import { EWS_CONFIG, apiGetProgress, apiSendActivity } from './api.js';
+import { EWS_CONFIG, apiGetHistory, apiGetProgress, apiSendActivity } from './api.js';
 import { appState, setStudentId, setStudentProgress, subscribe } from './state.js';
 import { escapeHtml, showToast } from './ui.js';
 
@@ -39,22 +39,26 @@ export function initProgress() {
   const progresSection = document.getElementById('progres-saya');
   const riwayatSection = document.getElementById('riwayat');
 
-  // Render awal riwayat (empty state informatif)
+  // Render awal riwayat dengan state informatif sesuai login/status
   if (riwayatSection) {
     renderHistorySection(riwayatSection);
   }
 
-  // Dengarkan perubahan state
   subscribe((event, payload) => {
-    if (event === 'student_id_changed' || event === 'section_changed') {
+    if (event === 'student_id_changed' || event === 'auth_mode_changed' || event === 'user_changed' || event === 'auth_cleared' || event === 'section_changed') {
       if (appState.activeSection === 'progres-saya') {
         checkAndRenderProgress(progresSection);
+      }
+      if (appState.activeSection === 'riwayat') {
+        loadAndRenderHistory(riwayatSection);
       }
     }
   });
 
-  // Render progres saat pertama kali diinisialisasi jika berada di tab progres
   checkAndRenderProgress(progresSection);
+  if (appState.activeSection === 'riwayat') {
+    loadAndRenderHistory(riwayatSection);
+  }
 }
 
 /**
@@ -473,39 +477,132 @@ function renderProgressErrorState(container, message) {
   });
 }
 
-/**
- * Render Halaman Riwayat Aktivitas (#riwayat)
- * Sesuai Butir 5 Jobdesk Dini:
- * Backend belum menyediakan endpoint riwayat aktivitas individual.
- * Tampilkan empty state yang informatif, menarik, tanpa data palsu.
- */
-function renderHistorySection(container) {
+async function loadAndRenderHistory(container) {
+  if (!container) return;
+
+  const currentId = EWS_CONFIG.studentId || appState.studentId;
+  if (!appState.user && appState.authMode !== 'authenticated' && !currentId) {
+    renderHistorySection(container, {
+      type: 'login',
+      message: 'Masuk sebagai mahasiswa untuk melihat riwayat.'
+    });
+    return;
+  }
+
+  if (!currentId) {
+    renderHistorySection(container, {
+      type: 'empty',
+      message: 'Riwayat akan muncul setelah Anda menyelesaikan kuis atau bacaan.'
+    });
+    return;
+  }
+
+  renderHistoryLoadingState(container, currentId);
+
+  try {
+    const data = await apiGetHistory(currentId);
+    const history = Array.isArray(data?.history) ? data.history : [];
+    renderHistorySection(container, { type: 'data', history });
+  } catch (err) {
+    renderHistorySection(container, {
+      type: 'error',
+      message: err.message || 'Server gagal memuat riwayat aktivitas.',
+      retryAction: () => loadAndRenderHistory(container)
+    });
+  }
+}
+
+function renderHistoryLoadingState(container, studentId) {
   container.innerHTML = `
     <div class="history-dashboard-wrapper animated-fade-in">
-      <div class="card history-empty-card">
-        <div class="history-icon-wrapper">
-          <svg viewBox="0 0 24 24" class="history-hero-icon" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-        </div>
-        <h2 class="history-empty-title">Riwayat Aktivitas Belum Tersedia</h2>
-        <p class="history-empty-text">
-          Riwayat aktivitas pembelajaran belum tersedia karena endpoint backend riwayat belum disediakan oleh sistem saat ini.
-        </p>
-        <div class="history-status-badge">
-          <span class="status-dot-pulse"></span>
-          <span>Status Sistem: Menunggu Integrasi Endpoint Riwayat Backend</span>
-        </div>
+      <div class="card history-loading-card">
+        <div class="spinner-large"></div>
+        <p class="loading-text">Memuat riwayat aktivitas mahasiswa <strong>${escapeHtml(studentId)}</strong>...</p>
+      </div>
+    </div>
+  `;
+}
 
-        <div class="history-blueprint-box">
-          <h4 class="blueprint-title">Kesiapan Arsitektur Frontend:</h4>
-          <p class="blueprint-desc">
-            Antarmuka telah disiapkan dan siap menerima data riwayat begitu endpoint backend diimplementasikan (misal: <code>GET /api/history/{student_id}</code>). Setiap aktivitas (waktu akses modul, pengumpulan tugas, perolehan XP, dan pencapaian lencana) akan langsung disajikan dalam bentuk linimasa interaktif tanpa perlu perombakan komponen.
-          </p>
+function renderHistorySection(container, config = { type: 'login', message: 'Masuk sebagai mahasiswa untuk melihat riwayat.' }) {
+  const { type = 'login', message = 'Masuk sebagai mahasiswa untuk melihat riwayat.', history = [], retryAction = null } = config;
+
+  if (type === 'login') {
+    container.innerHTML = `
+      <div class="history-dashboard-wrapper animated-fade-in">
+        <div class="card history-empty-card">
+          <div class="history-icon-wrapper">
+            <svg viewBox="0 0 24 24" class="history-hero-icon" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h2 class="history-empty-title">Masuk sebagai mahasiswa</h2>
+          <p class="history-empty-text">${escapeHtml(message)}</p>
         </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (type === 'empty') {
+    container.innerHTML = `
+      <div class="history-dashboard-wrapper animated-fade-in">
+        <div class="card history-empty-card">
+          <div class="history-icon-wrapper">
+            <svg viewBox="0 0 24 24" class="history-hero-icon" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h2 class="history-empty-title">Riwayat siswa masih kosong</h2>
+          <p class="history-empty-text">Riwayat akan muncul setelah Anda menyelesaikan kuis atau bacaan.</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (type === 'error') {
+    container.innerHTML = `
+      <div class="history-dashboard-wrapper animated-fade-in">
+        <div class="card history-empty-card">
+          <h2 class="history-empty-title">Server gagal memuat riwayat</h2>
+          <p class="history-empty-text">${escapeHtml(message)}</p>
+          <button type="button" class="btn btn-secondary mt-12" id="btnRetryHistory">Coba Lagi</button>
+        </div>
+      </div>
+    `;
+    container.querySelector('#btnRetryHistory')?.addEventListener('click', () => {
+      if (retryAction) retryAction();
+    });
+    return;
+  }
+
+  const entries = history.length
+    ? history.map(event => `
+        <li class="history-item">
+          <div class="history-dot" aria-hidden="true"></div>
+          <div class="history-content">
+            <div class="history-meta"><span>${escapeHtml(event.date || 'Tanggal tidak ada')}</span> <span>${escapeHtml(event.type || 'aktivitas')}</span></div>
+            <p>${escapeHtml(event.detail || 'Aktivitas pembelajaran tercatat')}</p>
+            <small>+${escapeHtml(String(event.xp_earned ?? 0))} XP</small>
+          </div>
+        </li>
+      `).join('')
+    : '<li class="history-item empty"><div class="history-dot" aria-hidden="true"></div><div class="history-content"><p>Riwayat akan muncul setelah Anda menyelesaikan kuis atau bacaan.</p></div></li>';
+
+  container.innerHTML = `
+    <div class="history-dashboard-wrapper animated-fade-in">
+      <div class="card history-card">
+        <div class="history-header">
+          <h2>Riwayat Aktivitas</h2>
+          <span>${history.length} event</span>
+        </div>
+        <ul class="history-list">${entries}</ul>
       </div>
     </div>
   `;

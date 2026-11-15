@@ -2,15 +2,61 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EWS ITS - Intelligent Tutor System &amp; Retention Risk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>EWS - Intelligent Tutor System &amp; Retention Risk</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%237c5ce7'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M32 15c7 7 10 14 10 17s-3 10-10 17c-7-7-10-14-10-17s3-10 10-17Z' fill='none' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <!-- Chart.js Vendor Script (Offline Local) -->
   <script src="js/vendor/chart.umd.min.js"></script>
 </head>
 <body>
-  <div class="app-layout">
+  <section class="public-view landing-view" id="landingView" aria-labelledby="landingTitle">
+    <div class="public-brand">
+      <div class="brand-logo-mark">
+        <svg viewBox="0 0 24 24" class="brand-logo-svg" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      </div>
+      <div><strong>Early Warning System</strong><span>Intelligent Tutor System</span></div>
+    </div>
+    <div class="public-content">
+      <span class="dash-eyebrow-badge">EWS · ITS</span>
+      <h1 id="landingTitle">Deteksi risiko belajar lebih awal.</h1>
+      <p>Gunakan data pembelajaran untuk memahami kondisi mahasiswa dan menentukan pendampingan yang tepat.</p>
+      <button type="button" class="btn btn-primary public-cta" data-open-login>Masuk ke Sistem <span aria-hidden="true">→</span></button>
+      <div class="public-benefits" aria-label="Manfaat sistem">
+        <span><i>✓</i> Prediksi berbasis data</span>
+        <span><i>✓</i> Pantau progres belajar</span>
+        <span><i>✓</i> Rekomendasi intervensi</span>
+      </div>
+      <small>Prototipe edukatif ITS. Bukan keputusan akademik resmi.</small>
+    </div>
+    <div class="public-art" aria-hidden="true"><span></span><span></span><span></span><b>27%</b><em>risiko terdeteksi lebih awal</em></div>
+  </section>
+
+  <section class="public-view login-view" id="loginView" hidden aria-labelledby="publicLoginTitle">
+    <div class="public-brand">
+      <div class="brand-logo-mark">
+        <svg viewBox="0 0 24 24" class="brand-logo-svg" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      </div>
+      <div><strong>EWS ITS</strong><span>Intelligent Tutor System</span></div>
+    </div>
+    <div class="login-card">
+      <button type="button" class="public-back" data-show-landing>← Kembali</button>
+      <span class="dash-eyebrow-badge">SELAMAT DATANG KEMBALI</span>
+      <h1 id="publicLoginTitle">Login</h1>
+      <form id="publicLoginForm" class="public-login-form">
+        <label for="publicLoginIdentifier">Email</label>
+        <input id="publicLoginIdentifier" name="identifier" type="text" autocomplete="username" required placeholder="contoh: mahasiswa1@its">
+        <label for="publicLoginPassword">Password</label>
+        <input id="publicLoginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan password">
+        <p id="publicLoginError" class="auth-error" role="alert" aria-live="polite"></p>
+        <button id="publicLoginSubmit" type="submit" class="btn btn-primary public-login-submit">Masuk</button>
+      </form>
+      <p class="login-note">Akun demo tersedia untuk kebutuhan presentasi dan pengujian lokal.</p>
+    </div>
+  </section>
+
+  <div class="app-layout" id="appView" hidden>
     <!-- Sidebar Bersama -->
     <aside class="sidebar" aria-label="Navigasi Utama">
       <div class="sidebar-brand">
@@ -80,8 +126,30 @@
             <button type="button" class="role-btn active" id="btnRoleDosen">Dosen</button>
             <button type="button" class="role-btn" id="btnRoleMhs">Mahasiswa</button>
           </div>
+          <div class="auth-panel" aria-label="Status login">
+            <span id="authStatusLabel">Mode Demo</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnOpenLogin">Masuk</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnLogout" hidden>Logout</button>
+          </div>
         </div>
       </header>
+
+      <div id="loginModal" class="auth-modal" hidden>
+        <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+          <div class="auth-modal-header">
+            <h2 id="loginTitle">Masuk ke akun demo</h2>
+            <button type="button" id="loginModalClose" aria-label="Tutup login">×</button>
+          </div>
+          <form id="loginForm">
+            <label for="loginIdentifier">Username atau email</label>
+            <input id="loginIdentifier" name="identifier" type="text" required>
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="password" type="password" required>
+            <p id="loginError" class="auth-error" aria-live="polite"></p>
+            <button id="loginSubmit" type="submit" class="btn btn-primary">Masuk</button>
+          </form>
+        </div>
+      </div>
 
       <!-- Banner / Area Notifikasi -->
       <div class="banner-area" id="bannerArea" aria-live="polite"></div>
@@ -94,7 +162,7 @@
           <!-- Tampilan Ringkasan Dosen -->
           <div id="ringkasanDosenWrapper">
             <div class="dash-page-header">
-              <span class="dash-eyebrow-badge">EWS ITS · ANALITIK PEMBELAJARAN</span>
+              <span class="dash-eyebrow-badge">Early Warning System</span>
               <h2 class="dash-page-title">Ringkasan Sistem &amp; Deteksi Dini</h2>
               <p class="dash-page-desc">Monitoring analitik retensi mahasiswa dan deteksi dini risiko putus studi berdasarkan aktivitas klik VLE serta pengerjaan tugas 6 minggu pertama (OULAD).</p>
             </div>
@@ -148,7 +216,7 @@
 
             <div class="dashboard-hero dashboard-hero-lecturer">
               <div class="dashboard-hero-copy">
-                <span class="dashboard-eyebrow">EWS ITS · DASHBOARD DOSEN</span>
+                <span class="dashboard-eyebrow">EWS · DASHBOARD DOSEN</span>
                 <h2>Pantau dan Analisis<br>Risiko Mahasiswa</h2>
                 <p>Dukung proses pembelajaran adaptif dengan inferensi cerdas machine learning.</p>
                 <button type="button" class="btn btn-primary btn-sm" data-nav-target="siswa-berisiko">Lihat Direktori Siswa <span aria-hidden="true">→</span></button>
@@ -230,7 +298,7 @@
               <div class="dash-card-header dashboard-panel-heading">
                 <div class="dash-card-heading-group">
                   <h3 class="dash-card-title">Perlu Perhatian Segera</h3>
-                  <p class="dash-card-desc">Lima mahasiswa dengan estimasi probabilitas kegagalan tertinggi yang memerlukan pendampingan akademik.</p>
+              <p class="dash-card-desc">Lima mahasiswa dengan skor risiko model tertinggi yang memerlukan pendampingan akademik.</p>
                 </div>
                 <button type="button" class="btn btn-secondary btn-sm" data-nav-target="siswa-berisiko">Lihat Semua 50 Mahasiswa</button>
               </div>
@@ -246,7 +314,7 @@
           <div id="ringkasanMhsWrapper" style="display: none;">
             <div class="dashboard-hero dashboard-hero-student">
               <div class="dashboard-hero-copy">
-                <span class="dashboard-eyebrow">EWS ITS · DASHBOARD MAHASISWA</span>
+                <span class="dashboard-eyebrow">EWS · DASHBOARD MAHASISWA</span>
                 <h2>Pantau Performa<br>Akademik Anda</h2>
                 <p>Kenali risiko akademik lebih awal dan tingkatkan prestasi belajar.</p>
                 <div class="dashboard-hero-actions"><button type="button" class="btn btn-primary btn-sm" data-nav-target="progres-saya">Lihat Detail <span aria-hidden="true">→</span></button><button type="button" class="btn btn-hero-secondary btn-sm" data-nav-target="prediksi">Uji Prediksi</button></div>
@@ -286,7 +354,7 @@
             <div class="dash-page-title-wrap">
               <span class="dash-badge-eyebrow">Data Monitoring</span>
               <h2 class="dash-page-title">Daftar Mahasiswa Berisiko</h2>
-              <p class="dash-page-desc">Sampel 50 pendaftaran mahasiswa dari Open University Learning Analytics Dataset (OULAD) dengan klasifikasi probabilitas dan tingkat risiko pembelajaran.</p>
+              <p class="dash-page-desc">Sampel 50 pendaftaran mahasiswa dari Open University Learning Analytics Dataset (OULAD) dengan skor model dan tingkat risiko pembelajaran.</p>
             </div>
           </div>
 

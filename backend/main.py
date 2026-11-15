@@ -4,9 +4,15 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.staticfiles import StaticFiles
 
+from .auth import (
+    get_current_user,
+    get_optional_current_user,
+    login_user,
+    logout_user,
+)
 from .gamification import (
     default_progress,
     level_for,
@@ -29,14 +35,14 @@ from .schemas import (
 )
 from .storage import read_progress, write_progress
 
-from .auth import login_user, logout_user, get_current_user
-
 app = FastAPI(title="EWS ITS")
 ROOT = Path(__file__).resolve().parents[1]
+
 
 @app.get("/health", response_model=HealthResponse)
 def health():
     return model_status()
+
 
 @app.post("/api/auth/login", response_model=LoginResponse)
 def api_login(request: LoginRequest):
@@ -53,15 +59,33 @@ def api_logout(
 
 @app.get("/api/auth/me")
 def api_me(user: dict = Depends(get_current_user)):
-    return {"username": user["username"], "nama": user["nama"], "role": user["role"]}
+    return {
+        "username": user["username"],
+        "nama": user["nama"],
+        "role": user["role"],
+        "student_id": user.get("student_id"),
+    }
+
 
 @app.post("/api/predict", response_model=PredictResponse)
-def api_predict(request: PredictRequest):
+def api_predict(
+    request: PredictRequest,
+    user: dict | None = Depends(get_optional_current_user),
+):
     if not is_model_loaded():
         raise HTTPException(status_code=503, detail="Model belum tersedia. Jalankan training terlebih dahulu.")
+    if user and user["role"] == "mahasiswa" and request.student_id and user.get("student_id") and request.student_id != user["student_id"]:
+        raise HTTPException(status_code=403, detail="Mahasiswa hanya dapat memprediksi data dirinya sendiri.")
     try:
         result = predict(request)
-        if request.student_id:
+        # Only a student's own prediction may update personal progress.
+        # Lecturer predictions remain analysis-only and cannot leak into student gamification data.
+        owns_student_progress = (
+            user is not None
+            and user["role"] == "mahasiswa"
+            and request.student_id == user.get("student_id")
+        )
+        if owns_student_progress:
             progress = read_progress(request.student_id) or default_progress()
             record_risk_level(progress, result.prediction.risk_level)
             write_progress(request.student_id, progress)
@@ -71,8 +95,15 @@ def api_predict(request: PredictRequest):
 
 
 @app.post("/api/activity", response_model=ActivityResponse)
-def api_activity(request: ActivityRequest):
+def api_activity(
+    request: ActivityRequest,
+    user: dict | None = Depends(get_optional_current_user),
+):
+    if user and user["role"] == "mahasiswa" and request.student_id != user.get("student_id"):
+        raise HTTPException(status_code=403, detail="Mahasiswa hanya dapat mencatat aktivitas untuk akun sendiri.")
+
     progress = read_progress(request.student_id) or default_progress()
+    progress.setdefault("history", [])
     progress, earned, new_badges = update_progress(
         progress,
         request.type,
@@ -80,6 +111,16 @@ def api_activity(request: ActivityRequest):
         request.item_id,
         date.today().isoformat(),
     )
+    event = {
+        "date": date.today().isoformat(),
+        "type": request.type,
+        "detail": f"{request.type.title()} selesai dengan skor {request.score if request.score is not None else 'n/a'}" if request.type == "kuis" else f"{request.type.title()} selesai",
+        "xp_earned": earned,
+    }
+    if request.item_id:
+        event["detail"] = f"{event['detail']} — item {request.item_id}"
+    progress["history"].append(event)
+    progress["history"] = sorted(progress["history"], key=lambda item: item["date"], reverse=True)[:50]
     write_progress(request.student_id, progress)
     return ActivityResponse(
         student_id=request.student_id,
@@ -92,8 +133,20 @@ def api_activity(request: ActivityRequest):
     )
 
 
+@app.get("/api/history/{student_id}")
+def api_history(student_id: str, user: dict | None = Depends(get_optional_current_user)):
+    if user and user["role"] == "mahasiswa" and student_id != user.get("student_id"):
+        raise HTTPException(status_code=403, detail="Anda hanya dapat melihat riwayat akun sendiri.")
+    progress = read_progress(student_id) or default_progress()
+    history = progress.get("history", [])
+    history = sorted(history, key=lambda item: item.get("date", ""), reverse=True)[:50]
+    return {"student_id": student_id, "history": history}
+
+
 @app.get("/api/progress/{student_id}", response_model=ProgressResponse)
-def api_progress(student_id: str):
+def api_progress(student_id: str, user: dict | None = Depends(get_optional_current_user)):
+    if user and user["role"] == "mahasiswa" and student_id != user.get("student_id"):
+        raise HTTPException(status_code=403, detail="Anda hanya dapat melihat progres akun sendiri.")
     progress = read_progress(student_id)
     if progress is None:
         raise HTTPException(status_code=404, detail="student_id tidak ditemukan")
@@ -108,7 +161,11 @@ def api_progress(student_id: str):
 
 
 @app.get("/api/students", response_model=list[StudentSummary])
-def api_students():
+def api_students(
+    user: dict | None = Depends(get_optional_current_user),
+):
+    if user and user["role"] != "dosen":
+        raise HTTPException(status_code=403, detail="Hanya dosen yang dapat melihat daftar mahasiswa.")
     dataset_path = ROOT / "data" / "processed" / "dataset.csv"
     if not dataset_path.exists():
         return []
@@ -143,11 +200,14 @@ def api_students():
 
 
 @app.get("/api/metrics", response_model=dict[str, Any])
-def api_metrics():
+def api_metrics(user: dict | None = Depends(get_optional_current_user)):
+    if user and user["role"] != "dosen":
+        raise HTTPException(status_code=403, detail="Hanya dosen yang dapat melihat metrik model.")
     metrics_path = ROOT / "models" / "metrics.json"
     if not metrics_path.exists():
         raise HTTPException(status_code=404, detail="Metrik model belum tersedia")
     return json.loads(metrics_path.read_text(encoding="utf-8"))
+
 
 # Mount frontend paling akhir agar tidak menutupi endpoint API.
 app.mount("/", StaticFiles(directory=str(ROOT / "frontend"), html=True), name="frontend")

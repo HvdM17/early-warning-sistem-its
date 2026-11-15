@@ -192,7 +192,7 @@ export function renderAllStudentsTable(list, filter = 'semua') {
           <tr>
             <th scope="col">ID Mahasiswa</th>
             <th scope="col">Tingkat Risiko</th>
-            <th scope="col">Probabilitas Kegagalan</th>
+            <th scope="col">Skor Risiko Model</th>
             <th scope="col">Model Penentu</th>
             <th scope="col" style="text-align: right;">Detail</th>
           </tr>
@@ -315,7 +315,7 @@ export function openStudentDetailModal(studentId) {
           <span class="dash-risk-pill risk-${escapeHtml(student.risk_level)}">Risiko ${escapeHtml(student.risk_level)}</span>
         </div>
         <div style="font-size: 24px; font-weight: 850; color: #0F172A; margin: 4px 0;">
-          ${probPct}% <span style="font-size: 12px; font-weight: 600; color: #64748B;">Probabilitas Kegagalan</span>
+          ${probPct}% <span style="font-size: 12px; font-weight: 600; color: #64748B;">Skor Risiko Model</span>
         </div>
         <div class="prob-track" style="height: 8px; margin-top: 8px;">
           <div class="prob-bar ${student.risk_level === 'tinggi' ? 'prob-high' : student.risk_level === 'sedang' ? 'prob-mid' : 'prob-low'}" style="width: ${probPct}%;"></div>
