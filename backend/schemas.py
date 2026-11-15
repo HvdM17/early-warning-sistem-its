@@ -91,3 +91,15 @@ class StudentSummary(BaseModel):
     probability: float = Field(ge=0, le=1)
     primary_model: str
 
+class LoginRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    identifier: str = Field(min_length=3, max_length=100)  # username atau email
+    password: str = Field(min_length=1, max_length=100)
+
+
+class LoginResponse(BaseModel):
+    token: str
+    username: str
+    nama: str
+    role: Literal["dosen", "siswa"]
