@@ -14,7 +14,12 @@ const SECTION_TITLES = {
   'metrik-model': 'Metrik & Evaluasi Model ML'
 };
 
+let isNavigationInitialized = false;
+
 export function initNavigation() {
+  if (isNavigationInitialized) return;
+  isNavigationInitialized = true;
+
   const btnRoleDosen = document.getElementById('btnRoleDosen');
   const btnRoleMhs = document.getElementById('btnRoleMhs');
   const navItems = document.querySelectorAll('.sidebar-nav .nav-item');

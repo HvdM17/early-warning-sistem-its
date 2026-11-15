@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EWS ITS - Intelligent Tutor System &amp; Retention Risk</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
   <!-- Chart.js Vendor Script (Offline Local) -->
   <script src="js/vendor/chart.umd.min.js"></script>
 </head>
@@ -89,15 +90,68 @@
       <main class="app-content">
 
         <!-- ================= BAGIAN 1: #ringkasan ================= -->
-        <section class="app-section" id="ringkasan">
+        <section class="app-section" id="ringkasan" style="display: block;">
           <!-- Tampilan Ringkasan Dosen -->
           <div id="ringkasanDosenWrapper">
+            <div class="dash-page-header">
+              <span class="dash-eyebrow-badge">EWS ITS · ANALITIK PEMBELAJARAN</span>
+              <h2 class="dash-page-title">Ringkasan Sistem &amp; Deteksi Dini</h2>
+              <p class="dash-page-desc">Monitoring analitik retensi mahasiswa dan deteksi dini risiko putus studi berdasarkan aktivitas klik VLE serta pengerjaan tugas 6 minggu pertama (OULAD).</p>
+            </div>
+
+            <!-- Kartu KPI Statistik Ringkasan -->
+            <div class="dash-kpi-grid">
+              <div class="dash-kpi-card">
+                <div class="dash-kpi-icon kpi-total">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <div class="dash-kpi-info">
+                  <span class="dash-kpi-label">Total Dipantau</span>
+                  <h3 class="dash-kpi-value" id="kpiTotalStudents">50 Siswa</h3>
+                  <span class="dash-kpi-sub">Sampel Pendaftaran OULAD</span>
+                </div>
+              </div>
+
+              <div class="dash-kpi-card">
+                <div class="dash-kpi-icon kpi-high">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                </div>
+                <div class="dash-kpi-info">
+                  <span class="dash-kpi-label">Risiko Tinggi</span>
+                  <h3 class="dash-kpi-value" id="kpiHighRisk">—</h3>
+                  <span class="dash-kpi-sub">Perlu Intervensi Segera</span>
+                </div>
+              </div>
+
+              <div class="dash-kpi-card">
+                <div class="dash-kpi-icon kpi-medium">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+                <div class="dash-kpi-info">
+                  <span class="dash-kpi-label">Risiko Sedang</span>
+                  <h3 class="dash-kpi-value" id="kpiMidRisk">—</h3>
+                  <span class="dash-kpi-sub">Pantau Tugas Mingguan</span>
+                </div>
+              </div>
+
+              <div class="dash-kpi-card">
+                <div class="dash-kpi-icon kpi-safe">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+                <div class="dash-kpi-info">
+                  <span class="dash-kpi-label">Aman / Rendah</span>
+                  <h3 class="dash-kpi-value" id="kpiLowRisk">—</h3>
+                  <span class="dash-kpi-sub">Performa Belajar Stabil</span>
+                </div>
+              </div>
+            </div>
+
             <div class="dashboard-hero dashboard-hero-lecturer">
               <div class="dashboard-hero-copy">
                 <span class="dashboard-eyebrow">EWS ITS · DASHBOARD DOSEN</span>
                 <h2>Pantau dan Analisis<br>Risiko Mahasiswa</h2>
-                <p>Dukung proses pembelajaran dengan data yang akurat.</p>
-                <button type="button" class="btn btn-primary btn-sm" data-nav-target="siswa-berisiko">Lihat Detail <span aria-hidden="true">→</span></button>
+                <p>Dukung proses pembelajaran adaptif dengan inferensi cerdas machine learning.</p>
+                <button type="button" class="btn btn-primary btn-sm" data-nav-target="siswa-berisiko">Lihat Direktori Siswa <span aria-hidden="true">→</span></button>
               </div>
               <svg class="dashboard-hero-art" viewBox="0 0 520 250" role="img" aria-label="Ilustrasi dosen menganalisis grafik risiko mahasiswa">
                 <defs><linearGradient id="lecturerScreen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#E8EDFF"/></linearGradient><linearGradient id="lecturerJacket" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4D6DB8"/><stop offset="1" stop-color="#233F82"/></linearGradient></defs>
@@ -111,28 +165,80 @@
               </svg>
             </div>
 
-            <div class="dashboard-overview-grid lecturer-overview-grid">
-              <article class="dashboard-panel risk-overview-panel">
-                <div class="dashboard-panel-heading"><div><h3>Ringkasan Risiko Mahasiswa</h3><p>Distribusi sampel mahasiswa</p><p class="data-timestamp">Jendela Waktu: Hari 0 - 41 (Enam Minggu Pertama)</p></div></div>
-                <div class="risk-overview-content">
-                  <div class="risk-donut" id="riskDonut" role="img" aria-label="Distribusi tingkat risiko mahasiswa"><div class="risk-donut-center"><strong id="riskPercent">—</strong><span>Berisiko</span></div></div>
-                  <div class="risk-legend">
-                    <div><i class="risk-dot risk-dot-high"></i><span>Berisiko Tinggi</span><strong id="riskHighCount">—</strong></div>
-                    <div><i class="risk-dot risk-dot-mid"></i><span>Berisiko Sedang</span><strong id="riskMidCount">—</strong></div>
-                    <div><i class="risk-dot risk-dot-low"></i><span>Aman</span><strong id="riskLowCount">—</strong></div>
+            <div class="dash-overview-columns dashboard-overview-grid lecturer-overview-grid">
+              <article class="dash-card dashboard-panel risk-overview-panel" style="margin-bottom: 0;">
+                <div class="dash-card-header dashboard-panel-heading">
+                  <div>
+                    <h3 class="dash-card-title">Distribusi Risiko Mahasiswa</h3>
+                    <p class="dash-card-desc">Jendela Waktu: Hari 0 - 41 (Enam Minggu Pertama OULAD)</p>
+                  </div>
+                </div>
+                <div class="dash-card-body risk-overview-content dash-donut-box">
+                  <div class="dash-donut-canvas-wrap risk-donut" id="riskDonut" role="img" aria-label="Distribusi tingkat risiko mahasiswa">
+                    <div class="dash-donut-center-info risk-donut-center">
+                      <strong id="riskPercent">—</strong>
+                      <span>Berisiko</span>
+                    </div>
+                  </div>
+                  <div class="dash-donut-legend risk-legend">
+                    <div class="dash-legend-item">
+                      <i class="dash-legend-dot dot-high risk-dot risk-dot-high"></i>
+                      <span>Risiko Tinggi</span>
+                      <strong id="riskHighCount">—</strong>
+                    </div>
+                    <div class="dash-legend-item">
+                      <i class="dash-legend-dot dot-medium risk-dot risk-dot-mid"></i>
+                      <span>Risiko Sedang</span>
+                      <strong id="riskMidCount">—</strong>
+                    </div>
+                    <div class="dash-legend-item">
+                      <i class="dash-legend-dot dot-low risk-dot risk-dot-low"></i>
+                      <span>Aman / Rendah</span>
+                      <strong id="riskLowCount">—</strong>
+                    </div>
                   </div>
                 </div>
               </article>
-              <article class="dashboard-panel dashboard-notifications">
-                <div class="dashboard-panel-heading"><h3>Notifikasi</h3><button type="button" class="text-link" data-nav-target="siswa-berisiko">Lihat Semua →</button></div>
-                <div class="dashboard-notice-row"><span class="notice-icon notice-icon-alert">!</span><div><strong id="classSummarySentence">Memuat data kelas...</strong><button type="button" class="notice-link" data-nav-target="siswa-berisiko">Lihat Detail →</button></div></div>
-                <div class="dashboard-notice-row"><span class="notice-icon notice-icon-info">i</span><div><strong id="primaryModelInfo">Memeriksa status model...</strong><button type="button" class="notice-link" data-nav-target="metrik-model">Lihat Evaluasi Metrik →</button></div></div>
+
+              <article class="dash-card dashboard-panel dashboard-notifications" style="margin-bottom: 0;">
+                <div class="dash-card-header dashboard-panel-heading">
+                  <h3 class="dash-card-title">Wawasan &amp; Status Sistem</h3>
+                  <button type="button" class="dash-notice-link text-link" data-nav-target="siswa-berisiko">Lihat Semua Siswa →</button>
+                </div>
+                <div class="dash-card-body dash-notice-list" style="padding-top: 16px;">
+                  <div class="dash-notice-item dashboard-notice-row">
+                    <span class="dash-notice-icon icon-alert notice-icon notice-icon-alert">!</span>
+                    <div class="dash-notice-content">
+                      <strong class="dash-notice-text" id="classSummarySentence">Memuat data kelas...</strong>
+                      <span class="dash-notice-sub">Distribusi status risiko dari dataset OULAD.</span>
+                      <button type="button" class="dash-notice-link notice-link" data-nav-target="siswa-berisiko">Buka Direktori Siswa →</button>
+                    </div>
+                  </div>
+                  <div class="dash-notice-item dashboard-notice-row">
+                    <span class="dash-notice-icon icon-info notice-icon notice-icon-info">i</span>
+                    <div class="dash-notice-content">
+                      <strong class="dash-notice-text" id="primaryModelInfo">Memeriksa status model...</strong>
+                      <span class="dash-notice-sub">Model prediktif utama k-NN &amp; pembanding MLP.</span>
+                      <button type="button" class="dash-notice-link notice-link" data-nav-target="metrik-model">Evaluasi Metrik Model →</button>
+                    </div>
+                  </div>
+                </div>
               </article>
             </div>
 
-            <article class="dashboard-panel lecturer-students-panel">
-              <div class="dashboard-panel-heading"><div><h3>Perlu Perhatian Sekarang</h3><p>Lima mahasiswa dengan risiko tertinggi yang memerlukan tindakan intervensi segera.</p></div><button type="button" class="btn btn-secondary btn-sm" data-nav-target="siswa-berisiko">Lihat Semua Siswa</button></div>
-              <div class="table-container" id="topRiskContainer"><p class="placeholder-text">Memuat data ringkasan risiko...</p></div>
+            <article class="dash-card dashboard-panel lecturer-students-panel">
+              <div class="dash-card-header dashboard-panel-heading">
+                <div class="dash-card-heading-group">
+                  <h3 class="dash-card-title">Perlu Perhatian Segera</h3>
+                  <p class="dash-card-desc">Lima mahasiswa dengan estimasi probabilitas kegagalan tertinggi yang memerlukan pendampingan akademik.</p>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" data-nav-target="siswa-berisiko">Lihat Semua 50 Mahasiswa</button>
+              </div>
+              <div class="dash-card-body" style="padding-top: 16px;">
+                <div class="table-container" id="topRiskContainer">
+                  <p class="placeholder-text">Memuat data ringkasan risiko...</p>
+                </div>
+              </div>
             </article>
           </div>
 
@@ -175,35 +281,56 @@
 
         <!-- ================= BAGIAN 2: #siswa-berisiko ================= -->
         <section class="app-section" id="siswa-berisiko" style="display: none;">
-          <div class="card">
-            <div class="card-header flex-between">
-              <div>
-                <h2 class="card-title">Daftar Mahasiswa Berisiko</h2>
-                <p class="card-desc">Sampel 50 pendaftaran mahasiswa dari Open University Learning Analytics Dataset (OULAD).</p>
+          <!-- Page Header -->
+          <div class="dash-page-header">
+            <div class="dash-page-title-wrap">
+              <span class="dash-badge-eyebrow">Data Monitoring</span>
+              <h2 class="dash-page-title">Daftar Mahasiswa Berisiko</h2>
+              <p class="dash-page-desc">Sampel 50 pendaftaran mahasiswa dari Open University Learning Analytics Dataset (OULAD) dengan klasifikasi probabilitas dan tingkat risiko pembelajaran.</p>
+            </div>
+          </div>
+
+          <div class="dash-card card">
+            <div class="dash-card-header card-header flex-between">
+              <div class="dash-card-heading-group">
+                <h3 class="dash-card-title card-title">Monitoring Mahasiswa Aktif</h3>
+                <p class="dash-card-desc card-desc">Gunakan filter untuk menyaring mahasiswa berdasarkan tingkat risiko atau klik baris untuk analisis detail.</p>
               </div>
-              <div class="filter-group" role="group" aria-label="Filter Tingkat Risiko">
-                <button type="button" class="filter-btn active" data-filter="semua">Semua</button>
-                <button type="button" class="filter-btn" data-filter="tinggi">Tinggi</button>
-                <button type="button" class="filter-btn" data-filter="sedang">Sedang</button>
-                <button type="button" class="filter-btn" data-filter="rendah">Rendah</button>
+              <div class="dash-filter-bar filter-group" role="group" aria-label="Filter Tingkat Risiko">
+                <button type="button" class="dash-filter-btn filter-btn active" data-filter="semua">
+                  <span>Semua</span>
+                  <span class="filter-badge-count" id="filterCountSemua">0</span>
+                </button>
+                <button type="button" class="dash-filter-btn filter-btn" data-filter="tinggi">
+                  <span>Tinggi</span>
+                  <span class="filter-badge-count" id="filterCountTinggi">0</span>
+                </button>
+                <button type="button" class="dash-filter-btn filter-btn" data-filter="sedang">
+                  <span>Sedang</span>
+                  <span class="filter-badge-count" id="filterCountSedang">0</span>
+                </button>
+                <button type="button" class="dash-filter-btn filter-btn" data-filter="rendah">
+                  <span>Rendah</span>
+                  <span class="filter-badge-count" id="filterCountRendah">0</span>
+                </button>
               </div>
             </div>
-            <div class="card-body">
-              <div class="split-view">
+            <div class="dash-card-body card-body">
+              <div class="dash-split-container split-view" id="studentsSplitContainer">
                 <div class="split-main">
-                  <div class="table-container" id="studentsTableContainer">
+                  <div class="dash-table-wrap table-container" id="studentsTableContainer">
                     <p class="placeholder-text">Memuat daftar siswa...</p>
                   </div>
                 </div>
-                <!-- Detail Panel Siswa -->
-                <aside class="detail-panel" id="studentDetailPanel" style="display: none;">
-                  <div class="detail-header">
-                    <h3 class="detail-title" id="detailStudentId">Detail Mahasiswa</h3>
-                    <button type="button" class="icon-btn" id="btnCloseDetail" aria-label="Tutup detail">
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <!-- Detail Panel Siswa (Slide-over Drawer) -->
+                <aside class="dash-detail-drawer detail-panel" id="studentDetailPanel" style="display: none;">
+                  <div class="dash-drawer-header detail-header">
+                    <h3 class="dash-drawer-title detail-title" id="detailStudentId">Detail Mahasiswa</h3>
+                    <button type="button" class="dash-drawer-close-btn icon-btn" id="btnCloseDetail" aria-label="Tutup detail">
+                      &times;
                     </button>
                   </div>
-                  <div class="detail-body" id="detailStudentContent"></div>
+                  <div class="dash-drawer-body detail-body" id="detailStudentContent"></div>
                 </aside>
               </div>
             </div>
@@ -339,96 +466,96 @@
 
         <!-- ================= BAGIAN 6: #metrik-model (Visualisasi Diagram ML) ================= -->
         <section class="app-section" id="metrik-model" style="display: none;">
-          <div class="metrics-dashboard-flow">
-            <!-- 1. Judul & Deskripsi Halaman -->
-            <div class="metrics-header-block mb-20">
-              <h2 class="metrics-main-title">Metrik &amp; Evaluasi Model ML</h2>
-              <p class="metrics-main-subtitle">Analisis perbandingan komprehensif performa algoritma K-Nearest Neighbors (KNN) dan Multi-Layer Perceptron (MLP) pada 5.983 sampel data uji OULAD.</p>
+          <div class="dash-page-header">
+            <div class="dash-page-title-wrap">
+              <span class="dash-badge-eyebrow">Evaluasi Model Machine Learning</span>
+              <h2 class="dash-page-title">Metrik &amp; Evaluasi Model</h2>
+              <p class="dash-page-desc">Analisis komprehensif perbandingan performa algoritma K-Nearest Neighbors (KNN) dan Multi-Layer Perceptron (MLP) pada 5.983 sampel data uji OULAD.</p>
             </div>
+          </div>
 
-            <!-- 2. Kartu Ringkasan Informasi Model -->
-            <div class="metrics-summary-grid mb-24" id="metricsSummaryCards">
-              <div class="placeholder-text">Memuat ringkasan model...</div>
-            </div>
+          <!-- 1. Kartu Ringkasan Informasi Evaluasi Model -->
+          <div class="dash-metrics-kpi-grid mb-24" id="metricsSummaryCards">
+            <div class="placeholder-text">Memuat ringkasan model...</div>
+          </div>
 
-            <!-- 3 & 4. Diagram Perbandingan: Grouped Bar Chart & Radar Chart -->
-            <div class="charts-comparison-grid mb-24">
-              <!-- Grouped Bar Chart Card -->
-              <div class="card chart-card">
-                <div class="card-header-styled">
-                  <div class="header-icon-wrap icon-blue">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                  </div>
-                  <div>
-                    <h3 class="card-title">Perbandingan Performa Evaluasi (Grouped Bar Chart)</h3>
-                    <p class="card-desc">Perbandingan metrik uji KNN vs MLP (Skala 50% - 90%)</p>
-                  </div>
-                </div>
-                <div class="chart-canvas-wrapper">
-                  <canvas id="perfBarChart"></canvas>
-                </div>
+          <!-- 2. Dual Diagram Perbandingan: Grouped Bar Chart & Radar Chart -->
+          <div class="dash-charts-grid mb-24">
+            <!-- Grouped Bar Chart Card -->
+            <div class="dash-chart-card card">
+              <div class="dash-chart-header">
+                <h3 class="dash-chart-title card-title">Perbandingan Performa Evaluasi (Grouped Bar Chart)</h3>
+                <p class="dash-chart-desc card-desc">Perbandingan metrik uji KNN vs MLP (Skala 50% - 90%)</p>
               </div>
-
-              <!-- Radar Chart Card -->
-              <div class="card chart-card">
-                <div class="card-header-styled">
-                  <div class="header-icon-wrap icon-purple">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg>
-                  </div>
-                  <div>
-                    <h3 class="card-title">Karakteristik &amp; Keseimbangan Model (Radar Chart)</h3>
-                    <p class="card-desc">Distribusi kekuatan model pada 5 metrik evaluasi utama</p>
-                  </div>
-                </div>
-                <div class="chart-canvas-wrapper radar-wrapper">
-                  <canvas id="perfRadarChart"></canvas>
-                </div>
+              <div class="dash-canvas-container">
+                <canvas id="perfBarChart"></canvas>
               </div>
             </div>
 
-            <!-- 5. Tabel Detail Metrik Evaluasi yang Sudah Tersedia -->
-            <div class="card mb-24">
-              <div class="card-header">
-                <h3 class="card-title">Tabel Detail Perbandingan Metrik (Data Uji OULAD)</h3>
-                <p class="card-desc">Evaluasi pada 5.983 sampel data uji independen (20% stratified test set). Model utama dipilih berdasarkan recall CV data latih.</p>
+            <!-- Radar Chart Card -->
+            <div class="dash-chart-card card">
+              <div class="dash-chart-header">
+                <h3 class="dash-chart-title card-title">Karakteristik &amp; Keseimbangan Model (Radar Chart)</h3>
+                <p class="dash-chart-desc card-desc">Distribusi kekuatan model pada 5 metrik evaluasi utama</p>
               </div>
-              <div class="card-body">
-                <div class="table-container" id="metricsTableContainer">
-                  <p class="placeholder-text">Memuat metrik evaluasi model...</p>
+              <div class="dash-canvas-container">
+                <canvas id="perfRadarChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Tabel Detail Perbandingan Metrik -->
+          <div class="dash-card card mb-24">
+            <div class="dash-card-header card-header">
+              <div class="dash-card-heading-group">
+                <h3 class="dash-card-title card-title">Tabel Detail Perbandingan Metrik (Data Uji OULAD)</h3>
+                <p class="dash-card-desc card-desc">Evaluasi pada 5.983 sampel data uji independen (20% stratified test set). Model utama dipilih berdasarkan recall CV data latih.</p>
+              </div>
+            </div>
+            <div class="dash-card-body card-body">
+              <div class="dash-table-wrap table-container" id="metricsTableContainer">
+                <p class="placeholder-text">Memuat metrik evaluasi model...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Confusion Matrix Grid -->
+          <div class="dash-cm-grid mb-24">
+            <div class="dash-card card">
+              <div class="dash-card-header card-header">
+                <div class="dash-card-heading-group">
+                  <h3 class="dash-card-title card-title">Confusion Matrix: KNN (k=3)</h3>
+                  <p class="dash-card-desc card-desc">Distribusi prediksi benar vs salah pada data uji OULAD</p>
                 </div>
+              </div>
+              <div class="dash-card-body card-body" id="knnCmContainer">
+                <p class="placeholder-text">Memuat confusion matrix...</p>
               </div>
             </div>
 
-            <!-- 6. Confusion Matrix -->
-            <div class="content-grid mb-24">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Confusion Matrix: KNN (k=3)</h3>
-                </div>
-                <div class="card-body" id="knnCmContainer">
-                  <p class="placeholder-text">Memuat confusion matrix...</p>
+            <div class="dash-card card">
+              <div class="dash-card-header card-header">
+                <div class="dash-card-heading-group">
+                  <h3 class="dash-card-title card-title">Confusion Matrix: MLP (32, 16)</h3>
+                  <p class="dash-card-desc card-desc">Distribusi prediksi benar vs salah pada data uji OULAD</p>
                 </div>
               </div>
-
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Confusion Matrix: MLP (32, 16)</h3>
-                </div>
-                <div class="card-body" id="mlpCmContainer">
-                  <p class="placeholder-text">Memuat confusion matrix...</p>
-                </div>
+              <div class="dash-card-body card-body" id="mlpCmContainer">
+                <p class="placeholder-text">Memuat confusion matrix...</p>
               </div>
             </div>
+          </div>
 
-            <!-- 7. Catatan Keterbatasan Akademik -->
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Catatan Keterbatasan Akademik</h3>
+          <!-- 5. Catatan Keterbatasan Akademik -->
+          <div class="dash-card card">
+            <div class="dash-card-header card-header">
+              <div class="dash-card-heading-group">
+                <h3 class="dash-card-title card-title">Catatan Keterbatasan Akademik</h3>
               </div>
-              <div class="card-body">
-                <div class="notice-box">
-                  <p><strong>Penting:</strong> Model dilatih menggunakan Open University Learning Analytics Dataset (OULAD) dari universitas jarak jauh di Inggris. Karakteristik perilaku belajar, jadwal presentasi, dan demografi mahasiswa dapat berbeda dengan perguruan tinggi di Indonesia. Hasil prediksi merupakan prototipe pendukung keputusan edukatif dan bukan keputusan akademik resmi.</p>
-                </div>
+            </div>
+            <div class="dash-card-body card-body">
+              <div class="notice-box">
+                <p><strong>Penting:</strong> Model dilatih menggunakan Open University Learning Analytics Dataset (OULAD) dari universitas jarak jauh di Inggris. Karakteristik perilaku belajar, jadwal presentasi, dan demografi mahasiswa dapat berbeda dengan perguruan tinggi di Indonesia. Hasil prediksi merupakan prototipe pendukung keputusan edukatif dan bukan keputusan akademik resmi.</p>
               </div>
             </div>
           </div>
