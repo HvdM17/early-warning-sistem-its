@@ -78,12 +78,14 @@ def api_predict(
         raise HTTPException(status_code=403, detail="Mahasiswa hanya dapat memprediksi data dirinya sendiri.")
     try:
         result = predict(request)
-        # Only a student's own prediction may update personal progress.
-        # Lecturer predictions remain analysis-only and cannot leak into student gamification data.
+        # Demo requests without auth should still create progress for the target student,
+        # while authenticated mahasiswa may only update their own record.
         owns_student_progress = (
-            user is not None
-            and user["role"] == "mahasiswa"
-            and request.student_id == user.get("student_id")
+            request.student_id is not None
+            and (
+                user is None
+                or (user["role"] == "mahasiswa" and request.student_id == user.get("student_id"))
+            )
         )
         if owns_student_progress:
             progress = read_progress(request.student_id) or default_progress()

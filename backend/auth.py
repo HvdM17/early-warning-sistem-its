@@ -16,22 +16,22 @@ _hasher = PasswordHasher()
 # Akun pengguna demo lokal, bukan autentikasi produksi.
 USERS = {
     "dosen1": {
-        "email": "dosen1@its",
-        "password_hash": _hasher.hash("password"),
+        "email": "dosen1@its.ac.id",
+        "password_hash": _hasher.hash("dosen123"),
         "role": "dosen",
         "nama": "Dosen Pengampu",
         "student_id": None,
     },
     "mahasiswa1": {
-        "email": "mahasiswa1@its",
-        "password_hash": _hasher.hash("password"),
+        "email": "mahasiswa1@its.ac.id",
+        "password_hash": _hasher.hash("mahasiswa123"),
         "role": "mahasiswa",
         "nama": "Mahasiswa Satu",
         "student_id": "S-001",
     },
     "mahasiswa2": {
-        "email": "mahasiswa2@its",
-        "password_hash": _hasher.hash("password"),
+        "email": "mahasiswa2@its.ac.id",
+        "password_hash": _hasher.hash("mahasiswa123"),
         "role": "mahasiswa",
         "nama": "Mahasiswa Dua",
         "student_id": "S-002",
@@ -87,7 +87,10 @@ def find_user(identifier: str) -> tuple[str | None, dict | None]:
     ident = identifier.strip().lower()
 
     for username, data in USERS.items():
-        if ident == username or ident == data["email"].lower():
+        emails = {data["email"].lower()}
+        if "@its" in data["email"]:
+            emails.add(data["email"].replace("@its.ac.id", "@its").lower())
+        if ident == username or ident in emails:
             return username, data
 
     return None, None
