@@ -38,12 +38,12 @@ Akun demo yang tersedia:
 
 ```text
 Dosen:
-- username/email: dosen1@its
-- password: password
+- username/email: dosen1@its.ac.id
+- password: dosen123
 
 Mahasiswa:
-- username/email: mahasiswa1@its
-- password: password
+- username/email: mahasiswa1@its.ac.id
+- password: mahasiswa123
 - student_id: S-001
 ```
 
